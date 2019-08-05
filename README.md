@@ -6,6 +6,7 @@ Running locally:
     Download all the files and run the “index.html” file.
 
   Android: 
+    
     Download all the files 
     Open “file:///sdcard/” or open “file:///storage/” in a browser depending on where your stored them (They might be switched :/).
     Navigate to your downloads folder (Or wherever you saved the files) and then find the “index.html” file and run it. (You can bookmark 

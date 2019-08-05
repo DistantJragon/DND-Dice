@@ -23,3 +23,4 @@ When changes are applied to the code, you will have to at least redownload code.
 Sometimes the whole D&D Dice folder will have to be redownloaded.
 
 Running online:
+Go to https://distantjragon.github.io/DND-Dice/

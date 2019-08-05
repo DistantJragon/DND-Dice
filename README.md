@@ -11,7 +11,7 @@ Running locally:
     Download all the files 
     Open “file:///sdcard/” or open “file:///storage/” in a browser depending on where your stored them. 
       (They might be switched :/)
-    Navigate to your downloads folder (Or wherever you saved the files) and then find the “index.html” file and run it.
+    Navigate to wherever you saved the files (downloads?) and then find the “index.html” file and run it.
       (You can bookmark the page and it will bring you back to the program as long as you don’t move the files)
 
   iOS: 

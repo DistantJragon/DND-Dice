@@ -18,6 +18,7 @@ Running locally:
       (They might be switched :/)
     Navigate to wherever you saved the files (downloads?) and then find the “index.html” file and run it.
       (You can bookmark the page and it will bring you back to the program as long as you don’t move the files)
+      (Or save it to your home screen)
 
   iOS: 
   

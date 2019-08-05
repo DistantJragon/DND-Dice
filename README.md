@@ -21,7 +21,7 @@ Running locally:
 
   iOS: 
   
-    I don’t think you can run local files on iOS. :(
+    I don’t think you can run local files on iOS without 3rd party apps.
 
 When changes are applied to the code, you will have to at least redownload code.js for changes to be applied. 
 Sometimes the whole D&D Dice folder will have to be redownloaded.

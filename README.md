@@ -2,6 +2,7 @@
 Canvas "Game" for rolling the dice seen in DND
 
 Running locally:
+  
   Windows:
   
     Download all the files and run the “index.html” file.

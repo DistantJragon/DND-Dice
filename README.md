@@ -1,14 +1,18 @@
 # DND-Dice
 Canvas "Game" for rolling the dice seen in DND
 
+Running online:
+
+   Go to https://distantjragon.github.io/DND-Dice/
+
 Running locally:
   
-  Windows:
-  
+   Windows:
+   
     Download all the files and run the “index.html” file.
 
   Android: 
-    
+  
     Download all the files 
     Open “file:///sdcard/” or open “file:///storage/” in a browser depending on where your stored them. 
       (They might be switched :/)
@@ -21,6 +25,3 @@ Running locally:
 
 When changes are applied to the code, you will have to at least redownload code.js for changes to be applied. 
 Sometimes the whole D&D Dice folder will have to be redownloaded.
-
-Running online:
-Go to https://distantjragon.github.io/DND-Dice/

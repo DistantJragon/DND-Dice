@@ -85,6 +85,9 @@ var myGameArea = {
     camera.y = canvasHeight / 2;
     startCam.x = camera.x;
     startCam.y = camera.y;
+    // DEBUG CHANGE NOT PERMANENT
+    console.log("Canvas: " + canvasWidth + " x " + canvasHeight)
+    console.log(window.devicePixelRatio)
     allSprites();
     createText();
     errorSound = new Sound("errorSound.mp3");

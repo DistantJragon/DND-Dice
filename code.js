@@ -1,23 +1,14 @@
 // Spites
-var D4_1, D4_2, D4_3, D4_4, D4_5, D4_6, D4_7, D4_8, D4_9;
-var D6_1, D6_2, D6_3, D6_4, D6_5, D6_6, D6_7, D6_8, D6_9;
-var D8_1, D8_2, D8_3, D8_4, D8_5, D8_6, D8_7, D8_8, D8_9;
-var D10_1, D10_2, D10_3, D10_4, D10_5, D10_6, D10_7, D10_8, D10_9, D10_10, D10_11, D10_12;
-var D00_1, D00_2, D00_3;
-var D12_1, D12_2, D12_3, D12_4, D12_5, D12_6, D12_7, D12_8, D12_9;
-var D20_1, D20_2, D20_3, D20_4, D20_5, D20_6, D20_7, D20_8, D20_9;
-var diceBar, diceBall;
-var numBar, numBall;
+var D4 = new DiceType(9, 0);
+var D6 = new DiceType(9, 1);
+var D8 = new DiceType(9, 2);
+var D10 = new DiceType(9, 3);
+var D00 = new DiceType(3, 4, "alert");
+var D12 = new DiceType(9, 5);
+var D20 = new DiceType(9, 6);
+var diceBar, diceBall, diceBarIcon;
+var numBar, numBall, numBarIcon;
 var muter;
-
-// Number of Dice per page
-var d4n = 1;
-var d6n = 1;
-var d8n = 1;
-var d10n = 1;
-var d00n = 1;
-var d12n = 1;
-var d20n = 1;
 
 // Text
 var D4Text1;
@@ -75,8 +66,8 @@ var textList = [];
 var myGameArea = {
   canvas : document.createElement("canvas"),
   start : function () {
-    myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio;
-    myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio;
+    myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio - 5;
+    myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio - 5;
     canvasWidth = myGameArea.canvas.width;
     canvasHeight = myGameArea.canvas.height;
     previousWidth = canvasWidth;
@@ -118,24 +109,24 @@ function goLeft() {
   }
 }
 function numUp() {
-         if (camera.x == canvasWidth * 0.5 && d4n < 9)  { d4n = d4n + 1; intendedSinglePositions(4);
-  } else if (camera.x == canvasWidth * 1.5 && d6n < 9)  { d6n = d6n + 1; intendedSinglePositions(6);
-  } else if (camera.x == canvasWidth * 2.5 && d8n < 9)  { d8n = d8n + 1; intendedSinglePositions(8);
-  } else if (camera.x == canvasWidth * 3.5 && d10n < 9) { d10n = d10n + 1; intendedSinglePositions(10);
-  } else if (camera.x == canvasWidth * 4.5 && d00n < 3) { d00n = d00n + 1; intendedD00Positions(); 
-  } else if (camera.x == canvasWidth * 5.5 && d12n < 9) { d12n = d12n + 1; intendedSinglePositions(12);                                                                 
-  } else if (camera.x == canvasWidth * 6.5 && d20n < 9) { d20n = d20n + 1; intendedSinglePositions(20);
+         if (camera.x == canvasWidth * 0.5 && D4.numberOfDice < 8)  { D4.numberOfDice = D4.numberOfDice + 1; D4.changeDestinations();
+  } else if (camera.x == canvasWidth * 1.5 && D6.numberOfDice < 8)  { D6.numberOfDice = D6.numberOfDice + 1; D6.changeDestinations();
+  } else if (camera.x == canvasWidth * 2.5 && D8.numberOfDice < 8)  { D8.numberOfDice = D8.numberOfDice + 1; D8.changeDestinations();
+  } else if (camera.x == canvasWidth * 3.5 && D10.numberOfDice < 8) { D10.numberOfDice = D10.numberOfDice + 1; D10.changeDestinations();
+  } else if (camera.x == canvasWidth * 4.5 && D00.numberOfDice < 2) { D00.numberOfDice = D00.numberOfDice + 1; D00.changeDestinations(); 
+  } else if (camera.x == canvasWidth * 5.5 && D12.numberOfDice < 8) { D12.numberOfDice = D12.numberOfDice + 1; D12.changeDestinations();                                                                 
+  } else if (camera.x == canvasWidth * 6.5 && D20.numberOfDice < 8) { D20.numberOfDice = D20.numberOfDice + 1; D20.changeDestinations();
   } else if (muteAll == -1) { errorSound.play(); }
   swipeCheck = false;
 }
 function numDown() {
-         if (camera.x == canvasWidth * 0.5 && d4n > 1)  { d4n = d4n - 1; intendedSinglePositions(4);
-  } else if (camera.x == canvasWidth * 1.5 && d6n > 1)  { d6n = d6n - 1; intendedSinglePositions(6);
-  } else if (camera.x == canvasWidth * 2.5 && d8n > 1)  { d8n = d8n - 1; intendedSinglePositions(8);
-  } else if (camera.x == canvasWidth * 3.5 && d10n > 1) { d10n = d10n - 1; intendedSinglePositions(10);
-  } else if (camera.x == canvasWidth * 4.5 && d00n > 1) { d00n = d00n - 1; intendedD00Positions(); 
-  } else if (camera.x == canvasWidth * 5.5 && d12n > 1) { d12n = d12n - 1; intendedSinglePositions(12);                                                                   
-  } else if (camera.x == canvasWidth * 6.5 && d20n > 1) { d20n = d20n - 1; intendedSinglePositions(20);
+         if (camera.x == canvasWidth * 0.5 && D4.numberOfDice > 0)  { D4.numberOfDice = D4.numberOfDice - 1; D4.changeDestinations();
+  } else if (camera.x == canvasWidth * 1.5 && D6.numberOfDice > 0)  { D6.numberOfDice = D6.numberOfDice - 1; D6.changeDestinations();
+  } else if (camera.x == canvasWidth * 2.5 && D8.numberOfDice > 0)  { D8.numberOfDice = D8.numberOfDice - 1; D8.changeDestinations();
+  } else if (camera.x == canvasWidth * 3.5 && D10.numberOfDice > 0) { D10.numberOfDice = D10.numberOfDice - 1; D10.changeDestinations();
+  } else if (camera.x == canvasWidth * 4.5 && D00.numberOfDice > 0) { D00.numberOfDice = D00.numberOfDice - 1; D00.changeDestinations(); 
+  } else if (camera.x == canvasWidth * 5.5 && D12.numberOfDice > 0) { D12.numberOfDice = D12.numberOfDice - 1; D12.changeDestinations();                                                                   
+  } else if (camera.x == canvasWidth * 6.5 && D20.numberOfDice > 0) { D20.numberOfDice = D20.numberOfDice - 1; D20.changeDestinations();
   } else if (muteAll == -1) { errorSound.play(); }
   swipeCheck = false;
 }
@@ -253,9 +244,6 @@ function timers() {
   }
   
   timer6 = timer6 + 1 // For Dice Bar Icon
-  if (timer6 >= 31) {
-    timer6 = 0;
-  }
 }
 function mute() {
   if (mouseIsOver(muter) && mousePressed) {
@@ -269,19 +257,19 @@ function mute() {
 function sliders() {
   var currentNumberOfDice;
   if (camera.x == canvasWidth * 0.5) {
-    currentNumberOfDice = d4n;
+    currentNumberOfDice = D4.numberOfDice;
   } else if (camera.x == canvasWidth * 1.5) {
-    currentNumberOfDice = d6n;
+    currentNumberOfDice = D6.numberOfDice;
   } else if (camera.x == canvasWidth * 2.5) {
-    currentNumberOfDice = d8n;
+    currentNumberOfDice = D8.numberOfDice;
   } else if (camera.x == canvasWidth * 3.5) {
-    currentNumberOfDice = d10n;
+    currentNumberOfDice = D10.numberOfDice;
   } else if (camera.x == canvasWidth * 4.5) {
-    currentNumberOfDice = d00n;
+    currentNumberOfDice = D00.numberOfDice;
   } else if (camera.x == canvasWidth * 5.5) {
-    currentNumberOfDice = d12n;
+    currentNumberOfDice = D12.numberOfDice;
   } else if (camera.x == canvasWidth * 6.5) {
-    currentNumberOfDice = d20n;
+    currentNumberOfDice = D20.numberOfDice;
   }
   diceBar.x = camera.x + 36;
   diceBar.y = canvasHeight - 63;
@@ -292,7 +280,8 @@ function sliders() {
   numBarIcon.x = numBar.x;
   numBarIcon.y = numBar.y + 441;
   if (timer6 == 30) {
-    diceBarIcon.sourceX = diceBarIcon.sourceX + 62;
+    diceBarIcon.sourceX = diceBarIcon.sourceX + 62.25;
+    timer6 = 0;
     if (diceBarIcon.sourceX >= 310) {
       diceBarIcon.sourceX = 0;
     }
@@ -300,7 +289,6 @@ function sliders() {
   if (mouseRelease) {
     PAS = false;
     numSlideCheck = false;
-    
   }
   if (mousePressOver(diceBar) == false) {
     diceBall.x = diceBar.x + (camera.x/canvasWidth + 0.5) * 123 - 492;
@@ -309,14 +297,16 @@ function sliders() {
     diceSlideCheck = true;
     toggle4 = false;
     toggle5 = false;
+    PAS = true;
   }
   if (mousePressOver(numBar) == false) {
     numBall.x = numBar.x;
     if (currentNumberOfDice != undefined) {
-      numBall.y = numBar.y - currentNumberOfDice * 92 + 460;
+      numBall.y = numBar.y - currentNumberOfDice * 92 + 368;
     }
   } else if (PAS == false) {
     numSlideCheck = true;
+    PAS = true;
   }
   if (diceSlideCheck) {
     diceBall.x = camera.mouseX;
@@ -344,777 +334,77 @@ function sliders() {
     if (camera.mouseY > numBar.y + 369) {
       numBall.y = numBar.y + 369;
     }
-    currentNumberOfDice = Math.round((numBall.y - 460 - numBar.y) / -92);
+    currentNumberOfDice = Math.round((numBall.y - 368 - numBar.y) / -92);
   }
   if (camera.x == canvasWidth * 0.5) {
-    d4n = currentNumberOfDice;
+    D4.numberOfDice = currentNumberOfDice;
   } else if (camera.x == canvasWidth * 1.5) {
-    d6n = currentNumberOfDice;
+    D6.numberOfDice = currentNumberOfDice;
   } else if (camera.x == canvasWidth * 2.5) {
-    d8n = currentNumberOfDice;
+    D8.numberOfDice = currentNumberOfDice;
   } else if (camera.x == canvasWidth * 3.5) {
-    d10n = currentNumberOfDice;
+    D10.numberOfDice = currentNumberOfDice;
   } else if (camera.x == canvasWidth * 4.5) {
-    d00n = currentNumberOfDice;
-    if (d00n > 3) {
-      d00n = 3;
+    D00.numberOfDice = currentNumberOfDice;
+    if (D00.numberOfDice > 2) {
+      D00.numberOfDice = 2;
     }
   } else if (camera.x == canvasWidth * 5.5) {
-    d12n = currentNumberOfDice;
+    D12.numberOfDice = currentNumberOfDice;
   } else if (camera.x == canvasWidth * 6.5) {
-    d20n = currentNumberOfDice;
+    D20.numberOfDice = currentNumberOfDice;
   }
   if (numSlideCheck) {
     if (camera.x == canvasWidth * 0.5) {
-      intendedSinglePositions(4);
+      D4.changeDestinations()
     } else if (camera.x == canvasWidth * 1.5) {
-      intendedSinglePositions(6);
+      D6.changeDestinations()
     } else if (camera.x == canvasWidth * 2.5) {
-      intendedSinglePositions(8);
+      D8.changeDestinations()
     } else if (camera.x == canvasWidth * 3.5) {
-      intendedSinglePositions(10);
+      D10.changeDestinations()
     } else if (camera.x == canvasWidth * 4.5) {
-      intendedD00Positions();
+      D00.changeDestinations()
     } else if (camera.x == canvasWidth * 5.5) {
-      intendedSinglePositions(12);
+      D12.changeDestinations()
     } else if (camera.x == canvasWidth * 6.5) {
-      intendedSinglePositions(20);
+      D20.changeDestinations()
     }
   }
 }
 function spriteAnimation() {
   if (warpingD4 == false) {
-    D4();
+    D4.moveToIntendedPositions();
   }
-  D6();
-  D8();
-  D10();
-  D00();
-  D12();
+  D6.moveToIntendedPositions();
+  D8.moveToIntendedPositions();
+  D10.moveToIntendedPositions();
+  D00.moveToIntendedPositions();
+  D12.moveToIntendedPositions();
   if (warpingD20 == false) {
-    D20();
+     D20.moveToIntendedPositions();
   }
   if (warpingD4) {
-    D4_1.x = D4_1.destinationX + canvasWidth * 7;
-    D4_2.x = D4_2.destinationX + canvasWidth * 7;
-    D4_3.x = D4_3.destinationX + canvasWidth * 7;
-    D4_4.x = D4_4.destinationX + canvasWidth * 7;
-    D4_5.x = D4_5.destinationX + canvasWidth * 7;
-    D4_6.x = D4_6.destinationX + canvasWidth * 7;
-    D4_7.x = D4_7.destinationX + canvasWidth * 7;
-    D4_8.x = D4_8.destinationX + canvasWidth * 7;
-    D4_9.x = D4_9.destinationX + canvasWidth * 7;
+    for (var i = 0; i < D4.diceLimit; i++) {
+      D4[i].x = D4[i].destinationX + canvasWidth * 7;
+    }
     if ((toggle4 == false && camera.x == canvasWidth * 0.5) || (toggle5 && camera.x == canvasWidth * 6.5)) {
       warpingD4 = false;
-      D4_1.x = D4_1.destinationX;
-      D4_2.x = D4_2.destinationX;
-      D4_3.x = D4_3.destinationX;
-      D4_4.x = D4_4.destinationX;
-      D4_5.x = D4_5.destinationX;
-      D4_6.x = D4_6.destinationX;
-      D4_7.x = D4_7.destinationX;
-      D4_8.x = D4_8.destinationX;
-      D4_9.x = D4_9.destinationX;
+      for (var i = 0; i < D4.diceLimit; i++) {
+        D4[i].x = D4[i].destinationX;
+      }
     }
   }
   if (warpingD20) {
-    D20_1.x = D20_1.destinationX - canvasWidth * 7;
-    D20_2.x = D20_2.destinationX - canvasWidth * 7;
-    D20_3.x = D20_3.destinationX - canvasWidth * 7;
-    D20_4.x = D20_4.destinationX - canvasWidth * 7;
-    D20_5.x = D20_5.destinationX - canvasWidth * 7;
-    D20_6.x = D20_6.destinationX - canvasWidth * 7;
-    D20_7.x = D20_7.destinationX - canvasWidth * 7;
-    D20_8.x = D20_8.destinationX - canvasWidth * 7;
-    D20_9.x = D20_9.destinationX - canvasWidth * 7;
+    for (var i = 0; i < D4.diceLimit; i++) {
+      D20[i].x = D20[i].destinationX - canvasWidth * 7;
+    }
     if ((toggle5 == false && camera.x == canvasWidth * 6.5) || (toggle4 && camera.x == canvasWidth * 0.5)) {
       warpingD20 = false;
-      D20_1.x = D20_1.destinationX;
-      D20_2.x = D20_2.destinationX;
-      D20_3.x = D20_3.destinationX;
-      D20_4.x = D20_4.destinationX;
-      D20_5.x = D20_5.destinationX;
-      D20_6.x = D20_6.destinationX;
-      D20_7.x = D20_7.destinationX;
-      D20_8.x = D20_8.destinationX;
-      D20_9.x = D20_9.destinationX;
+      for (var i = 0; i < D4.diceLimit; i++) {
+        D20[i].x = D20[i].destinationX;
+      }
     }
-  }
-}
-function intendedSinglePositions(diceType) {
-  for (var i = 1; i < 10; i++) {
-    eval("var X" + i + " = D" + diceType + "_" + i + ".destinationX;");
-    eval("var Y" + i + " = D" + diceType + "_" + i + ".destinationY;")
-  }
-  eval("var N = d" + diceType + "n;");
-  var multiplier;
-  if (diceType == 4) {
-    multiplier = 0
-  } else if (diceType == 6) {
-    multiplier = 1
-  } else if (diceType == 8) {
-    multiplier = 2
-  } else if (diceType == 10) {
-    multiplier = 3
-  } else if (diceType == 12) {
-    multiplier = 5
-  } else if (diceType == 20) {
-    multiplier = 6
-  }
-  if (N == 1) {
-    X1 = canvasWidth * (0.5 + multiplier);
-    Y1 = canvasHeight * 0.5;
-    X2 = canvasWidth * (1.5 + multiplier);
-    Y2 = canvasHeight * -0.5;
-  }
-  if (N == 2) {
-    X1 = canvasWidth * multiplier + (canvasWidth / 3);
-    Y1 = canvasHeight * 0.5;
-    X2 = canvasWidth * multiplier + (canvasWidth * 2 / 3);
-  }
-  if (N == 3) {
-    X1 = canvasWidth * multiplier + (canvasWidth / 3);
-    Y1 = canvasHeight / 3;
-    X2 = canvasWidth * multiplier + (2 * canvasWidth / 3);
-    X3 = canvasWidth * (0.5 + multiplier);
-    Y3 = canvasHeight * 2 / 3
-  }
-  if (N == 4) {
-    X1 = canvasWidth * multiplier + (canvasWidth / 3);
-    Y1 = canvasHeight / 3;
-    X2 = canvasWidth * multiplier + (2 * canvasWidth / 3);
-    X3 = canvasWidth * multiplier + (canvasWidth / 3);
-    Y3 = canvasHeight * 2 / 3;
-    X4 = canvasWidth * multiplier + (2 * canvasWidth / 3);
-    Y4 = canvasHeight * 2 / 3;
-  }
-  if (N == 5) {
-    X1 = canvasWidth * multiplier + (canvasWidth / 4);
-    Y1 = canvasHeight / 3;
-    X2 = canvasWidth * (0.5 + multiplier);
-    X3 = canvasWidth * multiplier + (canvasWidth / 3);
-    Y3 = canvasHeight * 2 / 3;
-    X4 = canvasWidth * multiplier + (2 * canvasWidth / 3);
-    Y4 = canvasHeight * 2 / 3;
-    X5 = canvasWidth * multiplier + (canvasWidth * 3 / 4);
-  }
-  if (N == 6) {
-    X1 = canvasWidth * multiplier + (canvasWidth / 4);
-    Y1 = canvasHeight / 3;
-    X2 = canvasWidth * (0.5 + multiplier);
-    X3 = canvasWidth * multiplier + (canvasWidth / 4);
-    Y3 = canvasHeight * 2 / 3;
-    X4 = canvasWidth * (0.5 + multiplier);
-    Y4 = canvasHeight * 2 / 3;
-    X5 = canvasWidth * multiplier + (canvasWidth * 3 / 4);
-    X6 = canvasWidth * multiplier + (canvasWidth * 3 / 4);
-    Y6 = canvasHeight * 2 / 3;
-  }
-  if (N == 7) {
-    X7 = canvasWidth * (0.5 + multiplier);
-    Y7 = canvasHeight * 3 / 4;
-  }
-  if (N == 8) {
-    X7 = canvasWidth * multiplier + (canvasWidth / 3);
-    Y7 = canvasHeight * 3 / 4;
-    X8 = canvasWidth * multiplier + (canvasWidth * 2 / 3);
-    Y8 = canvasHeight * 3 / 4;
-  }
-  if (N == 9) {
-    X7 = canvasWidth * multiplier + (canvasWidth / 4);
-    Y7 = canvasHeight * 3 / 4;
-    X8 = canvasWidth * (0.5 + multiplier);
-    Y8 = canvasHeight * 3 / 4;
-    X9 = canvasWidth * multiplier + (canvasWidth * 3 / 4);
-    Y9 = canvasHeight * 3 / 4;
-  }
-  if (N < 3) {
-    X3 = canvasWidth * (-0.5 + multiplier);
-    Y3 = canvasHeight * 1.5;
-  }
-  if (N < 4) {
-    X4 = canvasWidth * (1.5 + multiplier);
-    Y4 = canvasHeight * 1.5;
-  }
-  if (N < 5) {
-    X5 = canvasWidth * (1.5 + multiplier);
-    Y5 = canvasHeight * -0.5;
-  }
-  if (N < 6) {
-    X6 = canvasWidth * (1.5 + multiplier);
-    Y6 = canvasHeight * 1.5;
-  }
-  if (N < 7) {
-    X7 = canvasWidth * (0.5 + multiplier);
-    Y7 = canvasHeight * 1.5;
-  } else {
-    X1 = canvasWidth * multiplier + (canvasWidth / 4);
-    Y1 = canvasHeight / 4;
-    X2 = canvasWidth * (0.5 + multiplier);
-    X3 = canvasWidth * multiplier + (canvasWidth / 4);
-    Y3 = canvasHeight / 2;
-    X4 = canvasWidth * (0.5 + multiplier);
-    Y4 = canvasHeight / 2;
-    X5 = canvasWidth * multiplier + (canvasWidth * 3 / 4);
-    X6 = canvasWidth * multiplier + (canvasWidth * 3 / 4);
-    Y6 = canvasHeight / 2;
-  }
-  if (N < 8) {
-    X8 = canvasWidth * (1.5 + multiplier);
-    Y8 = canvasHeight * 1.5;
-  }
-  if (N < 9) {
-    X9 = canvasWidth * (1.5 + multiplier);
-    Y9 = canvasHeight * 1.5;
-  }
-  if (N > 1) {
-    Y2 = Y1;
-  }
-  if (N >= 5) {
-    Y5 = Y1;
-  }
-  for (var v = 1; v < 10; v++) {
-    eval("D" + diceType + "_" + v + ".destinationX = X" + v + ";");
-    eval("D" + diceType + "_" + v + ".destinationY = Y" + v + ";")
-  }
-}
-function intendedD00Positions() {
-  var multiplier = 4;
-  if (d00n == 1) {
-    D00_1.destinationX = canvasWidth * multiplier + (canvasWidth / 3);
-    D00_1.destinationY = canvasHeight * 0.5;
-    D00_2.destinationX = canvasWidth * (-0.5 + multiplier);
-    D00_2.destinationY = canvasHeight * 1.5;
-    D00_3.destinationX = canvasWidth * (-0.5 + multiplier);
-    D00_3.destinationY = canvasHeight * 1.5;
-    D10_10.destinationX = canvasWidth * multiplier + (canvasWidth * 2 / 3);
-    D10_10.destinationY = canvasHeight * 0.5;
-    D10_11.destinationX = canvasWidth * (1.5 + multiplier);
-    D10_11.destinationY = canvasHeight * 1.5;
-    D10_12.destinationX = canvasWidth * (1.5 + multiplier);
-    D10_12.destinationY = canvasHeight * 1.5;
-  }
-  if (d00n == 2) {
-    D00_1.destinationX = canvasWidth * multiplier + (canvasWidth / 3);
-    D00_1.destinationY = canvasHeight / 3;
-    D00_2.destinationX = canvasWidth * multiplier + (canvasWidth / 3);
-    D00_2.destinationY = canvasHeight * 2 / 3;
-    D00_3.destinationX = canvasWidth * (-0.5 + multiplier);
-    D00_3.destinationY = canvasHeight * 1.5;
-    D10_10.destinationX = canvasWidth * multiplier + (canvasWidth * 2 / 3);
-    D10_10.destinationY = canvasHeight / 3;
-    D10_11.destinationX = canvasWidth * multiplier + (canvasWidth * 2 / 3);
-    D10_11.destinationY = canvasHeight * 2 / 3;
-    D10_12.destinationX = canvasWidth * (1.5 + multiplier);
-    D10_12.destinationY = canvasHeight * 1.5;
-  }
-  if (d00n == 3) {
-    D00_1.destinationX = canvasWidth * multiplier + (canvasWidth / 3);
-    D00_1.destinationY = canvasHeight / 4;
-    D00_2.destinationX = canvasWidth * multiplier + (canvasWidth / 3);
-    D00_2.destinationY = canvasHeight * 0.5;
-    D00_3.destinationX = canvasWidth * multiplier + (canvasWidth / 3);
-    D00_3.destinationY = canvasHeight * 3 / 4;
-    D10_10.destinationX = canvasWidth * multiplier + (canvasWidth * 2 / 3);
-    D10_10.destinationY = canvasHeight / 4;
-    D10_11.destinationX = canvasWidth * multiplier + (canvasWidth * 2 / 3);
-    D10_11.destinationY = canvasHeight * 0.5;
-    D10_12.destinationX = canvasWidth * multiplier + (canvasWidth * 2 / 3);
-    D10_12.destinationY = canvasHeight * 3 / 4;
-  }
-}
-function D4() {
-  D4_1.velocityX = (D4_1.destinationX - D4_1.x) / 10;
-  if (Math.abs(D4_1.x - D4_1.destinationX) < 1) {
-    D4_1.x = D4_1.destinationX;
-  }
-  D4_1.velocityY = (D4_1.destinationY - D4_1.y) / 10;
-  if (Math.abs(D4_1.y - D4_1.destinationY) < 1) {
-    D4_1.y = D4_1.destinationY;
-  }
-  D4_2.velocityX = (D4_2.destinationX - D4_2.x) / 10;
-  if (Math.abs(D4_2.x - D4_2.destinationX) < 1) {
-    D4_2.x = D4_2.destinationX;
-  }
-  D4_2.velocityY = (D4_2.destinationY - D4_2.y) / 10;
-  if (Math.abs(D4_2.y - D4_2.destinationY) < 1) {
-    D4_2.y = D4_2.destinationY;
-  }
-  D4_3.velocityX = (D4_3.destinationX - D4_3.x) / 10;
-  if (Math.abs(D4_3.x - D4_3.destinationX) < 1) {
-    D4_3.x = D4_3.destinationX;
-  }
-  D4_3.velocityY = (D4_3.destinationY - D4_3.y) / 10;
-  if (Math.abs(D4_3.y - D4_3.destinationY) < 1) {
-    D4_3.y = D4_3.destinationY;
-  }
-  D4_4.velocityX = (D4_4.destinationX - D4_4.x) / 10;
-  if (Math.abs(D4_4.x - D4_4.destinationX) < 1) {
-    D4_4.x = D4_4.destinationX;
-  }
-  D4_4.velocityY = (D4_4.destinationY - D4_4.y) / 10;
-  if (Math.abs(D4_4.y - D4_4.destinationY) < 1) {
-    D4_4.y = D4_4.destinationY;
-  }
-  D4_5.velocityX = (D4_5.destinationX - D4_5.x) / 10;
-  if (Math.abs(D4_5.x - D4_5.destinationX) < 1) {
-    D4_5.x = D4_5.destinationX;
-  }
-  D4_5.velocityY = (D4_5.destinationY - D4_5.y) / 10;
-  if (Math.abs(D4_5.y - D4_5.destinationY) < 1) {
-    D4_5.y = D4_5.destinationY;
-  }
-  D4_6.velocityX = (D4_6.destinationX - D4_6.x) / 10;
-  if (Math.abs(D4_6.x - D4_6.destinationX) < 1) {
-    D4_6.x = D4_6.destinationX;
-  }
-  D4_6.velocityY = (D4_6.destinationY - D4_6.y) / 10;
-  if (Math.abs(D4_6.y - D4_6.destinationY) < 1) {
-    D4_6.y = D4_6.destinationY;
-  }
-  D4_7.velocityX = (D4_7.destinationX - D4_7.x) / 10;
-  if (Math.abs(D4_7.x - D4_7.destinationX) < 1) {
-    D4_7.x = D4_7.destinationX;
-  }
-  D4_7.velocityY = (D4_7.destinationY - D4_7.y) / 10;
-  if (Math.abs(D4_7.y - D4_7.destinationY) < 1) {
-    D4_7.y = D4_7.destinationY;
-  }
-  D4_8.velocityX = (D4_8.destinationX - D4_8.x) / 10;
-  if (Math.abs(D4_8.x - D4_8.destinationX) < 1) {
-    D4_8.x = D4_8.destinationX;
-  }
-  D4_8.velocityY = (D4_8.destinationY - D4_8.y) / 10;
-  if (Math.abs(D4_8.y - D4_8.destinationY) < 1) {
-    D4_8.y = D4_8.destinationY;
-  }
-  D4_9.velocityX = (D4_9.destinationX - D4_9.x) / 10;
-  if (Math.abs(D4_9.x - D4_9.destinationX) < 1) {
-    D4_9.x = D4_9.destinationX;
-  }
-  D4_9.velocityY = (D4_9.destinationY - D4_9.y) / 10;
-  if (Math.abs(D4_9.y - D4_9.destinationY) < 1) {
-    D4_9.y = D4_9.destinationY;
-  }
-}
-function D6() {
-  D6_1.velocityX = (D6_1.destinationX - D6_1.x) / 10;
-  if (Math.abs(D6_1.x - D6_1.destinationX) < 1) {
-    D6_1.x = D6_1.destinationX;
-  }
-  D6_1.velocityY = (D6_1.destinationY - D6_1.y) / 10;
-  if (Math.abs(D6_1.y - D6_1.destinationY) < 1) {
-    D6_1.y = D6_1.destinationY;
-  }
-  D6_2.velocityX = (D6_2.destinationX - D6_2.x) / 10;
-  if (Math.abs(D6_2.x - D6_2.destinationX) < 1) {
-    D6_2.x = D6_2.destinationX;
-  }
-  D6_2.velocityY = (D6_2.destinationY - D6_2.y) / 10;
-  if (Math.abs(D6_2.y - D6_2.destinationY) < 1) {
-    D6_2.y = D6_2.destinationY;
-  }
-  D6_3.velocityX = (D6_3.destinationX - D6_3.x) / 10;
-  if (Math.abs(D6_3.x - D6_3.destinationX) < 1) {
-    D6_3.x = D6_3.destinationX;
-  }
-  D6_3.velocityY = (D6_3.destinationY - D6_3.y) / 10;
-  if (Math.abs(D6_3.y - D6_3.destinationY) < 1) {
-    D6_3.y = D6_3.destinationY;
-  }
-  D6_4.velocityX = (D6_4.destinationX - D6_4.x) / 10;
-  if (Math.abs(D6_4.x - D6_4.destinationX) < 1) {
-    D6_4.x = D6_4.destinationX;
-  }
-  D6_4.velocityY = (D6_4.destinationY - D6_4.y) / 10;
-  if (Math.abs(D6_4.y - D6_4.destinationY) < 1) {
-    D6_4.y = D6_4.destinationY;
-  }
-  D6_5.velocityX = (D6_5.destinationX - D6_5.x) / 10;
-  if (Math.abs(D6_5.x - D6_5.destinationX) < 1) {
-    D6_5.x = D6_5.destinationX;
-  }
-  D6_5.velocityY = (D6_5.destinationY - D6_5.y) / 10;
-  if (Math.abs(D6_5.y - D6_5.destinationY) < 1) {
-    D6_5.y = D6_5.destinationY;
-  }
-  D6_6.velocityX = (D6_6.destinationX - D6_6.x) / 10;
-  if (Math.abs(D6_6.x - D6_6.destinationX) < 1) {
-    D6_6.x = D6_6.destinationX;
-  }
-  D6_6.velocityY = (D6_6.destinationY - D6_6.y) / 10;
-  if (Math.abs(D6_6.y - D6_6.destinationY) < 1) {
-    D6_6.y = D6_6.destinationY;
-  }
-  D6_7.velocityX = (D6_7.destinationX - D6_7.x) / 10;
-  if (Math.abs(D6_7.x - D6_7.destinationX) < 1) {
-    D6_7.x = D6_7.destinationX;
-  }
-  D6_7.velocityY = (D6_7.destinationY - D6_7.y) / 10;
-  if (Math.abs(D6_7.y - D6_7.destinationY) < 1) {
-    D6_7.y = D6_7.destinationY;
-  }
-  D6_8.velocityX = (D6_8.destinationX - D6_8.x) / 10;
-  if (Math.abs(D6_8.x - D6_8.destinationX) < 1) {
-    D6_8.x = D6_8.destinationX;
-  }
-  D6_8.velocityY = (D6_8.destinationY - D6_8.y) / 10;
-  if (Math.abs(D6_8.y - D6_8.destinationY) < 1) {
-    D6_8.y = D6_8.destinationY;
-  }
-  D6_9.velocityX = (D6_9.destinationX - D6_9.x) / 10;
-  if (Math.abs(D6_9.x - D6_9.destinationX) < 1) {
-    D6_9.x = D6_9.destinationX;
-  }
-  D6_9.velocityY = (D6_9.destinationY - D6_9.y) / 10;
-  if (Math.abs(D6_9.y - D6_9.destinationY) < 1) {
-    D6_9.y = D6_9.destinationY;
-  }
-}
-function D8() {
-  D8_1.velocityX = (D8_1.destinationX - D8_1.x) / 10;
-  if (Math.abs(D8_1.x - D8_1.destinationX) < 1) {
-    D8_1.x = D8_1.destinationX;
-  }
-  D8_1.velocityY = (D8_1.destinationY - D8_1.y) / 10;
-  if (Math.abs(D8_1.y - D8_1.destinationY) < 1) {
-    D8_1.y = D8_1.destinationY;
-  }
-  D8_2.velocityX = (D8_2.destinationX - D8_2.x) / 10;
-  if (Math.abs(D8_2.x - D8_2.destinationX) < 1) {
-    D8_2.x = D8_2.destinationX;
-  }
-  D8_2.velocityY = (D8_2.destinationY - D8_2.y) / 10;
-  if (Math.abs(D8_2.y - D8_2.destinationY) < 1) {
-    D8_2.y = D8_2.destinationY;
-  }
-  D8_3.velocityX = (D8_3.destinationX - D8_3.x) / 10;
-  if (Math.abs(D8_3.x - D8_3.destinationX) < 1) {
-    D8_3.x = D8_3.destinationX;
-  }
-  D8_3.velocityY = (D8_3.destinationY - D8_3.y) / 10;
-  if (Math.abs(D8_3.y - D8_3.destinationY) < 1) {
-    D8_3.y = D8_3.destinationY;
-  }
-  D8_4.velocityX = (D8_4.destinationX - D8_4.x) / 10;
-  if (Math.abs(D8_4.x - D8_4.destinationX) < 1) {
-    D8_4.x = D8_4.destinationX;
-  }
-  D8_4.velocityY = (D8_4.destinationY - D8_4.y) / 10;
-  if (Math.abs(D8_4.y - D8_4.destinationY) < 1) {
-    D8_4.y = D8_4.destinationY;
-  }
-  D8_5.velocityX = (D8_5.destinationX - D8_5.x) / 10;
-  if (Math.abs(D8_5.x - D8_5.destinationX) < 1) {
-    D8_5.x = D8_5.destinationX;
-  }
-  D8_5.velocityY = (D8_5.destinationY - D8_5.y) / 10;
-  if (Math.abs(D8_5.y - D8_5.destinationY) < 1) {
-    D8_5.y = D8_5.destinationY;
-  }
-  D8_6.velocityX = (D8_6.destinationX - D8_6.x) / 10;
-  if (Math.abs(D8_6.x - D8_6.destinationX) < 1) {
-    D8_6.x = D8_6.destinationX;
-  }
-  D8_6.velocityY = (D8_6.destinationY - D8_6.y) / 10;
-  if (Math.abs(D8_6.y - D8_6.destinationY) < 1) {
-    D8_6.y = D8_6.destinationY;
-  }
-  D8_7.velocityX = (D8_7.destinationX - D8_7.x) / 10;
-  if (Math.abs(D8_7.x - D8_7.destinationX) < 1) {
-    D8_7.x = D8_7.destinationX;
-  }
-  D8_7.velocityY = (D8_7.destinationY - D8_7.y) / 10;
-  if (Math.abs(D8_7.y - D8_7.destinationY) < 1) {
-    D8_7.y = D8_7.destinationY;
-  }
-  D8_8.velocityX = (D8_8.destinationX - D8_8.x) / 10;
-  if (Math.abs(D8_8.x - D8_8.destinationX) < 1) {
-    D8_8.x = D8_8.destinationX;
-  }
-  D8_8.velocityY = (D8_8.destinationY - D8_8.y) / 10;
-  if (Math.abs(D8_8.y - D8_8.destinationY) < 1) {
-    D8_8.y = D8_8.destinationY;
-  }
-  D8_9.velocityX = (D8_9.destinationX - D8_9.x) / 10;
-  if (Math.abs(D8_9.x - D8_9.destinationX) < 1) {
-    D8_9.x = D8_9.destinationX;
-  }
-  D8_9.velocityY = (D8_9.destinationY - D8_9.y) / 10;
-  if (Math.abs(D8_9.y - D8_9.destinationY) < 1) {
-    D8_9.y = D8_9.destinationY;
-  }
-}
-function D10() {
-  D10_1.velocityX = (D10_1.destinationX - D10_1.x) / 10;
-  if (Math.abs(D10_1.x - D10_1.destinationX) < 1) {
-    D10_1.x = D10_1.destinationX;
-  }
-  D10_1.velocityY = (D10_1.destinationY - D10_1.y) / 10;
-  if (Math.abs(D10_1.y - D10_1.destinationY) < 1) {
-    D10_1.y = D10_1.destinationY;
-  }
-  D10_2.velocityX = (D10_2.destinationX - D10_2.x) / 10;
-  if (Math.abs(D10_2.x - D10_2.destinationX) < 1) {
-    D10_2.x = D10_2.destinationX;
-  }
-  D10_2.velocityY = (D10_2.destinationY - D10_2.y) / 10;
-  if (Math.abs(D10_2.y - D10_2.destinationY) < 1) {
-    D10_2.y = D10_2.destinationY;
-  }
-  D10_3.velocityX = (D10_3.destinationX - D10_3.x) / 10;
-  if (Math.abs(D10_3.x - D10_3.destinationX) < 1) {
-    D10_3.x = D10_3.destinationX;
-  }
-  D10_3.velocityY = (D10_3.destinationY - D10_3.y) / 10;
-  if (Math.abs(D10_3.y - D10_3.destinationY) < 1) {
-    D10_3.y = D10_3.destinationY;
-  }
-  D10_4.velocityX = (D10_4.destinationX - D10_4.x) / 10;
-  if (Math.abs(D10_4.x - D10_4.destinationX) < 1) {
-    D10_4.x = D10_4.destinationX;
-  }
-  D10_4.velocityY = (D10_4.destinationY - D10_4.y) / 10;
-  if (Math.abs(D10_4.y - D10_4.destinationY) < 1) {
-    D10_4.y = D10_4.destinationY;
-  }
-  D10_5.velocityX = (D10_5.destinationX - D10_5.x) / 10;
-  if (Math.abs(D10_5.x - D10_5.destinationX) < 1) {
-    D10_5.x = D10_5.destinationX;
-  }
-  D10_5.velocityY = (D10_5.destinationY - D10_5.y) / 10;
-  if (Math.abs(D10_5.y - D10_5.destinationY) < 1) {
-    D10_5.y = D10_5.destinationY;
-  }
-  D10_6.velocityX = (D10_6.destinationX - D10_6.x) / 10;
-  if (Math.abs(D10_6.x - D10_6.destinationX) < 1) {
-    D10_6.x = D10_6.destinationX;
-  }
-  D10_6.velocityY = (D10_6.destinationY - D10_6.y) / 10;
-  if (Math.abs(D10_6.y - D10_6.destinationY) < 1) {
-    D10_6.y = D10_6.destinationY;
-  }
-  D10_7.velocityX = (D10_7.destinationX - D10_7.x) / 10;
-  if (Math.abs(D10_7.x - D10_7.destinationX) < 1) {
-    D10_7.x = D10_7.destinationX;
-  }
-  D10_7.velocityY = (D10_7.destinationY - D10_7.y) / 10;
-  if (Math.abs(D10_7.y - D10_7.destinationY) < 1) {
-    D10_7.y = D10_7.destinationY;
-  }
-  D10_8.velocityX = (D10_8.destinationX - D10_8.x) / 10;
-  if (Math.abs(D10_8.x - D10_8.destinationX) < 1) {
-    D10_8.x = D10_8.destinationX;
-  }
-  D10_8.velocityY = (D10_8.destinationY - D10_8.y) / 10;
-  if (Math.abs(D10_8.y - D10_8.destinationY) < 1) {
-    D10_8.y = D10_8.destinationY;
-  }
-  D10_9.velocityX = (D10_9.destinationX - D10_9.x) / 10;
-  if (Math.abs(D10_9.x - D10_9.destinationX) < 1) {
-    D10_9.x = D10_9.destinationX;
-  }
-  D10_9.velocityY = (D10_9.destinationY - D10_9.y) / 10;
-  if (Math.abs(D10_9.y - D10_9.destinationY) < 1) {
-    D10_9.y = D10_9.destinationY;
-  }
-}
-function D00() {
-  D00_1.velocityX = (D00_1.destinationX - D00_1.x) / 10;
-  if (Math.abs(D00_1.x - D00_1.destinationX) < 1) {
-    D00_1.x = D00_1.destinationX;
-  }
-  D00_1.velocityY = (D00_1.destinationY - D00_1.y) / 10;
-  if (Math.abs(D00_1.y - D00_1.destinationY) < 1) {
-    D00_1.y = D00_1.destinationY;
-  }
-  D00_2.velocityX = (D00_2.destinationX - D00_2.x) / 10;
-  if (Math.abs(D00_2.x - D00_2.destinationX) < 1) {
-    D00_2.x = D00_2.destinationX;
-  }
-  D00_2.velocityY = (D00_2.destinationY - D00_2.y) / 10;
-  if (Math.abs(D00_2.y - D00_2.destinationY) < 1) {
-    D00_2.y = D00_2.destinationY;
-  }
-  D00_3.velocityX = (D00_3.destinationX - D00_3.x) / 10;
-  if (Math.abs(D00_3.x - D00_3.destinationX) < 1) {
-    D00_3.x = D00_3.destinationX;
-  }
-  D00_3.velocityY = (D00_3.destinationY - D00_3.y) / 10;
-  if (Math.abs(D00_3.y - D00_3.destinationY) < 1) {
-    D00_3.y = D00_3.destinationY;
-  }
-  D10_10.velocityX = (D10_10.destinationX - D10_10.x) / 10;
-  if (Math.abs(D10_10.x - D10_10.destinationX) < 1) {
-    D10_10.x = D10_10.destinationX;
-  }
-  D10_10.velocityY = (D10_10.destinationY - D10_10.y) / 10;
-  if (Math.abs(D10_10.y - D10_10.destinationY) < 1) {
-    D10_10.y = D10_10.destinationY;
-  }
-  D10_11.velocityX = (D10_11.destinationX - D10_11.x) / 10;
-  if (Math.abs(D10_11.x - D10_11.destinationX) < 1) {
-    D10_11.x = D10_11.destinationX;
-  }
-  D10_11.velocityY = (D10_11.destinationY - D10_11.y) / 10;
-  if (Math.abs(D10_11.y - D10_11.destinationY) < 1) {
-    D10_11.y = D10_11.destinationY;
-  }
-  D10_12.velocityX = (D10_12.destinationX - D10_12.x) / 10;
-  if (Math.abs(D10_12.x - D10_12.destinationX) < 1) {
-    D10_12.x = D10_12.destinationX;
-  }
-  D10_12.velocityY = (D10_12.destinationY - D10_12.y) / 10;
-  if (Math.abs(D10_12.y - D10_12.destinationY) < 1) {
-    D10_12.y = D10_12.destinationY;
-  }
-}
-function D12() {
-  D12_1.velocityX = (D12_1.destinationX - D12_1.x) / 10;
-  if (Math.abs(D12_1.x - D12_1.destinationX) < 1) {
-    D12_1.x = D12_1.destinationX;
-  }
-  D12_1.velocityY = (D12_1.destinationY - D12_1.y) / 10;
-  if (Math.abs(D12_1.y - D12_1.destinationY) < 1) {
-    D12_1.y = D12_1.destinationY;
-  }
-  D12_2.velocityX = (D12_2.destinationX - D12_2.x) / 10;
-  if (Math.abs(D12_2.x - D12_2.destinationX) < 1) {
-    D12_2.x = D12_2.destinationX;
-  }
-  D12_2.velocityY = (D12_2.destinationY - D12_2.y) / 10;
-  if (Math.abs(D12_2.y - D12_2.destinationY) < 1) {
-    D12_2.y = D12_2.destinationY;
-  }
-  D12_3.velocityX = (D12_3.destinationX - D12_3.x) / 10;
-  if (Math.abs(D12_3.x - D12_3.destinationX) < 1) {
-    D12_3.x = D12_3.destinationX;
-  }
-  D12_3.velocityY = (D12_3.destinationY - D12_3.y) / 10;
-  if (Math.abs(D12_3.y - D12_3.destinationY) < 1) {
-    D12_3.y = D12_3.destinationY;
-  }
-  D12_4.velocityX = (D12_4.destinationX - D12_4.x) / 10;
-  if (Math.abs(D12_4.x - D12_4.destinationX) < 1) {
-    D12_4.x = D12_4.destinationX;
-  }
-  D12_4.velocityY = (D12_4.destinationY - D12_4.y) / 10;
-  if (Math.abs(D12_4.y - D12_4.destinationY) < 1) {
-    D12_4.y = D12_4.destinationY;
-  }
-  D12_5.velocityX = (D12_5.destinationX - D12_5.x) / 10;
-  if (Math.abs(D12_5.x - D12_5.destinationX) < 1) {
-    D12_5.x = D12_5.destinationX;
-  }
-  D12_5.velocityY = (D12_5.destinationY - D12_5.y) / 10;
-  if (Math.abs(D12_5.y - D12_5.destinationY) < 1) {
-    D12_5.y = D12_5.destinationY;
-  }
-  D12_6.velocityX = (D12_6.destinationX - D12_6.x) / 10;
-  if (Math.abs(D12_6.x - D12_6.destinationX) < 1) {
-    D12_6.x = D12_6.destinationX;
-  }
-  D12_6.velocityY = (D12_6.destinationY - D12_6.y) / 10;
-  if (Math.abs(D12_6.y - D12_6.destinationY) < 1) {
-    D12_6.y = D12_6.destinationY;
-  }
-  D12_7.velocityX = (D12_7.destinationX - D12_7.x) / 10;
-  if (Math.abs(D12_7.x - D12_7.destinationX) < 1) {
-    D12_7.x = D12_7.destinationX;
-  }
-  D12_7.velocityY = (D12_7.destinationY - D12_7.y) / 10;
-  if (Math.abs(D12_7.y - D12_7.destinationY) < 1) {
-    D12_7.y = D12_7.destinationY;
-  }
-  D12_8.velocityX = (D12_8.destinationX - D12_8.x) / 10;
-  if (Math.abs(D12_8.x - D12_8.destinationX) < 1) {
-    D12_8.x = D12_8.destinationX;
-  }
-  D12_8.velocityY = (D12_8.destinationY - D12_8.y) / 10;
-  if (Math.abs(D12_8.y - D12_8.destinationY) < 1) {
-    D12_8.y = D12_8.destinationY;
-  }
-  D12_9.velocityX = (D12_9.destinationX - D12_9.x) / 10;
-  if (Math.abs(D12_9.x - D12_9.destinationX) < 1) {
-    D12_9.x = D12_9.destinationX;
-  }
-  D12_9.velocityY = (D12_9.destinationY - D12_9.y) / 10;
-  if (Math.abs(D12_9.y - D12_9.destinationY) < 1) {
-    D12_9.y = D12_9.destinationY;
-  }
-}
-function D20() {
-  D20_1.velocityX = (D20_1.destinationX - D20_1.x) / 10;
-  if (Math.abs(D20_1.x - D20_1.destinationX) < 1) {
-    D20_1.x = D20_1.destinationX;
-  }
-  D20_1.velocityY = (D20_1.destinationY - D20_1.y) / 10;
-  if (Math.abs(D20_1.y - D20_1.destinationY) < 1) {
-    D20_1.y = D20_1.destinationY;
-  }
-  D20_2.velocityX = (D20_2.destinationX - D20_2.x) / 10;
-  if (Math.abs(D20_2.x - D20_2.destinationX) < 1) {
-    D20_2.x = D20_2.destinationX;
-  }
-  D20_2.velocityY = (D20_2.destinationY - D20_2.y) / 10;
-  if (Math.abs(D20_2.y - D20_2.destinationY) < 1) {
-    D20_2.y = D20_2.destinationY;
-  }
-  D20_3.velocityX = (D20_3.destinationX - D20_3.x) / 10;
-  if (Math.abs(D20_3.x - D20_3.destinationX) < 1) {
-    D20_3.x = D20_3.destinationX;
-  }
-  D20_3.velocityY = (D20_3.destinationY - D20_3.y) / 10;
-  if (Math.abs(D20_3.y - D20_3.destinationY) < 1) {
-    D20_3.y = D20_3.destinationY;
-  }
-  D20_4.velocityX = (D20_4.destinationX - D20_4.x) / 10;
-  if (Math.abs(D20_4.x - D20_4.destinationX) < 1) {
-    D20_4.x = D20_4.destinationX;
-  }
-  D20_4.velocityY = (D20_4.destinationY - D20_4.y) / 10;
-  if (Math.abs(D20_4.y - D20_4.destinationY) < 1) {
-    D20_4.y = D20_4.destinationY;
-  }
-  D20_5.velocityX = (D20_5.destinationX - D20_5.x) / 10;
-  if (Math.abs(D20_5.x - D20_5.destinationX) < 1) {
-    D20_5.x = D20_5.destinationX;
-  }
-  D20_5.velocityY = (D20_5.destinationY - D20_5.y) / 10;
-  if (Math.abs(D20_5.y - D20_5.destinationY) < 1) {
-    D20_5.y = D20_5.destinationY;
-  }
-  D20_6.velocityX = (D20_6.destinationX - D20_6.x) / 10;
-  if (Math.abs(D20_6.x - D20_6.destinationX) < 1) {
-    D20_6.x = D20_6.destinationX;
-  }
-  D20_6.velocityY = (D20_6.destinationY - D20_6.y) / 10;
-  if (Math.abs(D20_6.y - D20_6.destinationY) < 1) {
-    D20_6.y = D20_6.destinationY;
-  }
-  D20_7.velocityX = (D20_7.destinationX - D20_7.x) / 10;
-  if (Math.abs(D20_7.x - D20_7.destinationX) < 1) {
-    D20_7.x = D20_7.destinationX;
-  }
-  D20_7.velocityY = (D20_7.destinationY - D20_7.y) / 10;
-  if (Math.abs(D20_7.y - D20_7.destinationY) < 1) {
-    D20_7.y = D20_7.destinationY;
-  }
-  D20_8.velocityX = (D20_8.destinationX - D20_8.x) / 10;
-  if (Math.abs(D20_8.x - D20_8.destinationX) < 1) {
-    D20_8.x = D20_8.destinationX;
-  }
-  D20_8.velocityY = (D20_8.destinationY - D20_8.y) / 10;
-  if (Math.abs(D20_8.y - D20_8.destinationY) < 1) {
-    D20_8.y = D20_8.destinationY;
-  }
-  D20_9.velocityX = (D20_9.destinationX - D20_9.x) / 10;
-  if (Math.abs(D20_9.x - D20_9.destinationX) < 1) {
-    D20_9.x = D20_9.destinationX;
-  }
-  D20_9.velocityY = (D20_9.destinationY - D20_9.y) / 10;
-  if (Math.abs(D20_9.y - D20_9.destinationY) < 1) {
-    D20_9.y = D20_9.destinationY;
   }
 }
 function cameraPos() {
@@ -1149,72 +439,33 @@ function cameraPos() {
 function roll() {
   // Rolls dice when camera is on them
   if (camera.x == canvasWidth * 0.5) {
-    D4_1.sourceX = randomNumber(1, 4) * D4_1.width;
-    D4_2.sourceX = randomNumber(1, 4) * D4_2.width;
-    D4_3.sourceX = randomNumber(1, 4) * D4_3.width;
-    D4_4.sourceX = randomNumber(1, 4) * D4_4.width;
-    D4_5.sourceX = randomNumber(1, 4) * D4_5.width;
-    D4_6.sourceX = randomNumber(1, 4) * D4_6.width;
-    D4_7.sourceX = randomNumber(1, 4) * D4_7.width;
-    D4_8.sourceX = randomNumber(1, 4) * D4_8.width;
-    D4_9.sourceX = randomNumber(1, 4) * D4_9.width;
+    for (var i = 0; i < D4.numberOfDice + 1; i++) {
+      D4[i].sourceX = randomNumber(1, 4) * D4[i].width;
+    }
   } else if (camera.x == canvasWidth * 1.5) {
-    D6_1.sourceX = randomNumber(1, 6) * D6_1.width;
-    D6_2.sourceX = randomNumber(1, 6) * D6_2.width;
-    D6_3.sourceX = randomNumber(1, 6) * D6_3.width;
-    D6_4.sourceX = randomNumber(1, 6) * D6_4.width;
-    D6_5.sourceX = randomNumber(1, 6) * D6_5.width;
-    D6_6.sourceX = randomNumber(1, 6) * D6_6.width;
-    D6_7.sourceX = randomNumber(1, 6) * D6_7.width;
-    D6_8.sourceX = randomNumber(1, 6) * D6_8.width;
-    D6_9.sourceX = randomNumber(1, 6) * D6_9.width;
+    for (var i = 0; i < D6.numberOfDice + 1; i++) {
+      D6[i].sourceX = randomNumber(1, 6) * D6[i].width;
+    }
   } else if (camera.x == canvasWidth * 2.5) {
-    D8_1.sourceX = randomNumber(1, 8) * D8_1.width;
-    D8_2.sourceX = randomNumber(1, 8) * D8_2.width;
-    D8_3.sourceX = randomNumber(1, 8) * D8_3.width;
-    D8_4.sourceX = randomNumber(1, 8) * D8_4.width;
-    D8_5.sourceX = randomNumber(1, 8) * D8_5.width;
-    D8_6.sourceX = randomNumber(1, 8) * D8_6.width;
-    D8_7.sourceX = randomNumber(1, 8) * D8_7.width;
-    D8_8.sourceX = randomNumber(1, 8) * D8_8.width;
-    D8_9.sourceX = randomNumber(1, 8) * D8_9.width;
+    for (var i = 0; i < D8.numberOfDice + 1; i++) {
+      D8[i].sourceX = randomNumber(1, 8) * D8[i].width;
+    }
   } else if (camera.x == canvasWidth * 3.5) {
-    D10_1.sourceX = randomNumber(1, 10) * D10_1.width;
-    D10_2.sourceX = randomNumber(1, 10) * D10_2.width;
-    D10_3.sourceX = randomNumber(1, 10) * D10_3.width;
-    D10_4.sourceX = randomNumber(1, 10) * D10_4.width;
-    D10_5.sourceX = randomNumber(1, 10) * D10_5.width;
-    D10_6.sourceX = randomNumber(1, 10) * D10_6.width;
-    D10_7.sourceX = randomNumber(1, 10) * D10_7.width;
-    D10_8.sourceX = randomNumber(1, 10) * D10_8.width;
-    D10_9.sourceX = randomNumber(1, 10) * D10_9.width;
+    for (var i = 0; i < D10.numberOfDice + 1; i++) {
+      D10[i].sourceX = randomNumber(1, 10) * D10[i].width;
+    }
   } else if (camera.x == canvasWidth * 4.5) {
-    D10_10.sourceX = randomNumber(1, 10) * D10_10.width;
-    D10_11.sourceX = randomNumber(1, 10) * D10_11.width;
-    D10_12.sourceX = randomNumber(1, 10) * D10_12.width;
-    D00_1.sourceX = randomNumber(1, 10) * D00_1.width;
-    D00_2.sourceX = randomNumber(1, 10) * D00_2.width;
-    D00_3.sourceX = randomNumber(1, 10) * D00_3.width;
+    for (var i = 0; i < (D00.numberOfDice + 1) * 2; i++) {
+      D00[i].sourceX = randomNumber(1, 10) * D00[i].width;
+    }
   } else if (camera.x == canvasWidth * 5.5) {
-    D12_1.sourceX = randomNumber(1, 12) * D12_1.width;
-    D12_2.sourceX = randomNumber(1, 12) * D12_2.width;
-    D12_3.sourceX = randomNumber(1, 12) * D12_3.width;
-    D12_4.sourceX = randomNumber(1, 12) * D12_4.width;
-    D12_5.sourceX = randomNumber(1, 12) * D12_5.width;
-    D12_6.sourceX = randomNumber(1, 12) * D12_6.width;
-    D12_7.sourceX = randomNumber(1, 12) * D12_7.width;
-    D12_8.sourceX = randomNumber(1, 12) * D12_8.width;
-    D12_9.sourceX = randomNumber(1, 12) * D12_9.width;
+    for (var i = 0; i < D12.numberOfDice + 1; i++) {
+      D12[i].sourceX = randomNumber(1, 12) * D12[i].width;
+    }
   } else if (camera.x == canvasWidth * 6.5) {
-    D20_1.sourceX = randomNumber(1, 20) * D20_1.width;
-    D20_2.sourceX = randomNumber(1, 20) * D20_2.width;
-    D20_3.sourceX = randomNumber(1, 20) * D20_3.width;
-    D20_4.sourceX = randomNumber(1, 20) * D20_4.width;
-    D20_5.sourceX = randomNumber(1, 20) * D20_5.width;
-    D20_6.sourceX = randomNumber(1, 20) * D20_6.width;
-    D20_7.sourceX = randomNumber(1, 20) * D20_7.width;
-    D20_8.sourceX = randomNumber(1, 20) * D20_8.width;
-    D20_9.sourceX = randomNumber(1, 20) * D20_9.width;
+    for (var i = 0; i < D20.numberOfDice + 1; i++) {
+      D20[i].sourceX = randomNumber(1, 20) * D20[i].width;
+    }
   }
   swipeCheck = false;
 }
@@ -1281,80 +532,13 @@ function Component(width, height, color, x, y, type) {
   };
 }
 function allSprites() {
-  var multiplier = 0;
-  D4_1 = new Component(250, 218, "D4.png", canvasWidth * (0.5 + multiplier), canvasHeight * 0.5, "image");
-  D4_2 = new Component(250, 218, "D4.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D4_3 = new Component(250, 218, "D4.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  D4_4 = new Component(250, 218, "D4.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D4_5 = new Component(250, 218, "D4.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D4_6 = new Component(250, 218, "D4.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D4_7 = new Component(250, 218, "D4.png", canvasWidth * (0.5 + multiplier), canvasHeight * 1.5, "image");
-  D4_8 = new Component(250, 218, "D4.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D4_9 = new Component(250, 218, "D4.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  
-  multiplier = 1;
-  D6_1 = new Component(250, 250, "D6.png", canvasWidth * (0.5 + multiplier), canvasHeight * 0.5, "image");
-  D6_2 = new Component(250, 250, "D6.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D6_3 = new Component(250, 250, "D6.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  D6_4 = new Component(250, 250, "D6.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D6_5 = new Component(250, 250, "D6.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D6_6 = new Component(250, 250, "D6.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D6_7 = new Component(250, 250, "D6.png", canvasWidth * (0.5 + multiplier), canvasHeight * 1.5, "image");
-  D6_8 = new Component(250, 250, "D6.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D6_9 = new Component(250, 250, "D6.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  
-  multiplier = 2;
-  D8_1 = new Component(250, 250, "D8.png", canvasWidth * (0.5 + multiplier), canvasHeight * 0.5, "image");
-  D8_2 = new Component(250, 250, "D8.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D8_3 = new Component(250, 250, "D8.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  D8_4 = new Component(250, 250, "D8.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D8_5 = new Component(250, 250, "D8.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D8_6 = new Component(250, 250, "D8.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D8_7 = new Component(250, 250, "D8.png", canvasWidth * (0.5 + multiplier), canvasHeight * 1.5, "image");
-  D8_8 = new Component(250, 250, "D8.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D8_9 = new Component(250, 250, "D8.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  
-  multiplier = 3;
-  D10_1 = new Component(250, 250, "D10.png", canvasWidth * (0.5 + multiplier), canvasHeight * 0.5, "image");
-  D10_2 = new Component(250, 250, "D10.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D10_3 = new Component(250, 250, "D10.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  D10_4 = new Component(250, 250, "D10.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D10_5 = new Component(250, 250, "D10.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D10_6 = new Component(250, 250, "D10.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D10_7 = new Component(250, 250, "D10.png", canvasWidth * (0.5 + multiplier), canvasHeight * 1.5, "image");
-  D10_8 = new Component(250, 250, "D10.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D10_9 = new Component(250, 250, "D10.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  multiplier = 4;
-  D10_10 = new Component(250, 250, "D10.png", canvasWidth * multiplier + (canvasWidth * 2 / 3), canvasHeight * 0.5, "image");
-  D10_11 = new Component(250, 250, "D10.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D10_12 = new Component(250, 250, "D10.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  
-  multiplier = 4;
-  D00_1 = new Component(250, 250, "D00.png", canvasWidth * multiplier + (canvasWidth / 3), canvasHeight * 0.5, "image");
-  D00_2 = new Component(250, 250, "D00.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  D00_3 = new Component(250, 250, "D00.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  
-  multiplier = 5;
-  D12_1 = new Component(250, 250, "D12.png", canvasWidth * (0.5 + multiplier), canvasHeight * 0.5, "image");
-  D12_2 = new Component(250, 250, "D12.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D12_3 = new Component(250, 250, "D12.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  D12_4 = new Component(250, 250, "D12.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D12_5 = new Component(250, 250, "D12.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D12_6 = new Component(250, 250, "D12.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D12_7 = new Component(250, 250, "D12.png", canvasWidth * (0.5 + multiplier), canvasHeight * 1.5, "image");
-  D12_8 = new Component(250, 250, "D12.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D12_9 = new Component(250, 250, "D12.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  
-  multiplier = 6;
-  D20_1 = new Component(250, 218, "D20.png", canvasWidth * (0.5 + multiplier), canvasHeight * 0.5, "image");
-  D20_2 = new Component(250, 218, "D20.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D20_3 = new Component(250, 218, "D20.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
-  D20_4 = new Component(250, 218, "D20.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D20_5 = new Component(250, 218, "D20.png", canvasWidth * (1.5 + multiplier), canvasHeight * -0.5, "image");
-  D20_6 = new Component(250, 218, "D20.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D20_7 = new Component(250, 218, "D20.png", canvasWidth * (0.5 + multiplier), canvasHeight * 1.5, "image");
-  D20_8 = new Component(250, 218, "D20.png", canvasWidth * (1.5 + multiplier), canvasHeight * 1.5, "image");
-  D20_9 = new Component(250, 218, "D20.png", canvasWidth * (-0.5 + multiplier), canvasHeight * 1.5, "image");
+  D4.createSprites(250, 218, "D4.png", 0);
+  D6.createSprites(250, 250, "D6.png", 1);
+  D8.createSprites(250, 250, "D8.png", 2);
+  D10.createSprites(250, 250, "D10.png", 3);
+  D00.createSprites(250, 250, 4)
+  D12.createSprites(250, 250, "D12.png", 5);
+  D20.createSprites(250, 218, "D20.png", 6);
   
   diceBar = new Component(800, 62, "Dice Bar.png", 425, 625, "image");
   diceBall = new Component(37, 37, "Ball.png", 22, 375, "image");
@@ -1508,26 +692,131 @@ function Sound(src) {
     this.sound.pause();
   }
 }
+function DiceType(diceLimit, pageNumber, D00Check) {
+  this.numberOfDice = 0;
+  this.diceLimit = diceLimit;
+  this.pageNumber = pageNumber
+  if (D00Check === undefined) {
+    for (var i = 0; i < this.diceLimit; i++) {
+      this[i] = undefined;
+    }
+    this.moveToIntendedPositions = function() {
+      for (var i = 0; i < this.diceLimit; i++) {
+        this[i].velocityX = (this[i].destinationX - this[i].x) / 10;
+        if (Math.abs(this[i].x - this[i].destinationX) < 1) {
+          this[i].x = this[i].destinationX;
+        }
+        this[i].velocityY = (this[i].destinationY - this[i].y) / 10;
+        if (Math.abs(this[i].y - this[i].destinationY) < 1) {
+          this[i].y = this[i].destinationY;
+        }
+      }
+    }
+    this.createSprites = function(width, height, url) {
+      var xList = [0.5, 1.5, -0.5, 1.5, 1.5, 1.5, 0.5, 1.5, -0.5];
+      var yList = [0.5, -0.5, 1.5, 1.5, -0.5, 1.5, 1.5, 1.5, 1.5];
+      for (var i = 0; i < this.diceLimit; i++) {
+        this[i] = new Component(width, height, url, canvasWidth * (xList[i] + this.pageNumber), canvasHeight * yList[i], "image");
+      }
+    }
+    this.changeDestinations = function() {
+      var xList = {};
+      var yList = {};
+      xList[0] = [ 1/2,  1/3,  1/3,  1/3,  1/4,  1/4, 1/4, 1/4, 1/4]
+      yList[0] = [ 1/2,  1/2,  1/3,  1/3,  1/3,  1/3, 1/4, 1/4, 1/4]
+      xList[1] = [ 3/2,  2/3,  2/3,  2/3,  1/2,  1/2, 1/2, 1/2, 1/2]
+      yList[1] = [-1/2,  1/2,  1/3,  1/3,  1/3,  1/3, 1/4, 1/4, 1/4]
+      xList[2] = [-1/2, -1/2,  1/2,  1/3,  1/3,  1/4, 1/4, 1/4, 1/4]
+      yList[2] = [ 3/2,  3/2,  2/3,  2/3,  2/3,  2/3, 1/2, 1/2, 1/2]
+      xList[3] = [ 3/2,  3/2,  3/2,  2/3,  2/3,  1/2, 1/2, 1/2, 1/2]
+      yList[3] = [ 3/2,  3/2,  3/2,  2/3,  2/3,  2/3, 1/2, 1/2, 1/2]
+      xList[4] = [ 3/2,  3/2,  3/2,  3/2,  3/4,  3/4, 3/4, 3/4, 3/4]
+      yList[4] = [-1/2, -1/2, -1/2, -1/2,  1/3,  1/3, 1/4, 1/4, 1/4]
+      xList[5] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/4, 3/4, 3/4, 3/4]
+      yList[5] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  2/3, 1/2, 1/2, 1/2]
+      xList[6] = [-1/2, -1/2, -1/2, -1/2, -1/2, -1/2, 1/2, 1/3, 1/4]
+      yList[6] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/4, 3/4, 3/4]
+      xList[7] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/2, 2/3, 1/2]
+      yList[7] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/2, 3/4, 3/4]
+      
+      xList[8] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/2, 3/2, 3/4]
+      yList[8] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/2, 3/2, 3/4]
+      for (var i = 0; i < this.diceLimit; i++) {
+        this[i].destinationX = canvasWidth * (xList[i][this.numberOfDice] + this.pageNumber);
+        this[i].destinationY = canvasHeight * yList[i][this.numberOfDice];
+      }
+    }
+  } else {
+    for (var i = 0; i < this.diceLimit * 2; i++) {
+      this[i] = undefined;
+    }
+    this.moveToIntendedPositions = function() {
+      for (var i = 0; i < this.diceLimit * 2; i++) {
+        this[i].velocityX = (this[i].destinationX - this[i].x) / 10;
+        if (Math.abs(this[i].x - this[i].destinationX) < 1) {
+          this[i].x = this[i].destinationX;
+        }
+        this[i].velocityY = (this[i].destinationY - this[i].y) / 10;
+        if (Math.abs(this[i].y - this[i].destinationY) < 1) {
+          this[i].y = this[i].destinationY;
+        }
+      }
+    }
+    this.createSprites = function(width, height) {
+      var xList = [1/3, 2/3, -0.5, 1.5, -0.5, 1.5];
+      var yList = [0.5, 0.5, 1.5, 1.5, 1.5, 1.5];
+      for (var i = 0; i < diceLimit; i++) {
+        this[i * 2] = new Component(width, height, "D00.png", canvasWidth * (xList[i * 2] + this.pageNumber), canvasHeight * yList[i], "image");
+        this[i * 2 + 1] = new Component(width, height, "D10.png", canvasWidth * (xList[i * 2 + 1] + this.pageNumber), canvasHeight * yList[i], "image");
+      }
+    }
+    this.changeDestinations = function() {
+      var xList = {};
+      var yList = {};
+      xList[0] = [ 1/3,  1/3,  1/3]
+      yList[0] = [ 1/2,  1/3,  1/4]
+      
+      xList[1] = [ 2/3,  2/3,  2/3]
+      yList[1] = [ 1/2,  1/3,  1/4]
+      
+      xList[2] = [-1/2,  1/3,  1/3]
+      yList[2] = [ 3/2,  2/3,  1/2]
+      
+      xList[3] = [ 3/2,  2/3,  2/3]
+      yList[3] = [ 3/2,  2/3,  1/2]
+      
+      xList[4] = [-1/2, -1/2,  1/3]
+      yList[4] = [ 3/2,  3/2,  3/4]
+      
+      xList[5] = [ 3/2,  3/2,  2/3]
+      yList[5] = [ 3/2,  3/2,  3/4]
+      for (var i = 0; i < this.diceLimit * 2; i++) {
+        this[i].destinationX = canvasWidth * (xList[i][this.numberOfDice] + this.pageNumber);
+        this[i].destinationY = canvasHeight * yList[i][this.numberOfDice];
+      }
+    }
+  }
+}
 function updateCanvasSize() {
   if (previousWidth != window.innerWidth * window.devicePixelRatio || 
       previousHeight != window.innerHeight * window.devicePixelRatio) {
     myGameArea.canvas.width = 1000;
     myGameArea.canvas.height = 1000;
-    myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio;
-    myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio;
+    myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio - 5;
+    myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio - 5;
     canvasWidth = myGameArea.canvas.width;
     canvasHeight = myGameArea.canvas.height;
     camera.x = (camera.x / previousWidth) * canvasWidth;
     camera.y = canvasHeight / 2;
     startCam.x = canvasWidth / 2;
     startCam.y = canvasHeight / 2;
-    intendedSinglePositions(4);
-    intendedSinglePositions(6);
-    intendedSinglePositions(8);
-    intendedSinglePositions(10);
-    intendedD00Positions();
-    intendedSinglePositions(12);
-    intendedSinglePositions(20);
+    D4.changeDestinations();
+    D6.changeDestinations();
+    D8.changeDestinations();
+    D10.changeDestinations();
+    D00.changeDestinations();
+    D12.changeDestinations();
+    D20.changeDestinations();
     D4Text1.x = canvasWidth * 0.5 - 15;
     D4Text2.x = canvasWidth * 7.5 - 15;
     D6Text1.x = canvasWidth * 1.5 - 15;
@@ -1538,6 +827,6 @@ function updateCanvasSize() {
     D20Text1.x = canvasWidth * 6.5 - 30;
     D20Text2.x = canvasWidth * -0.5 - 30;
   }
-  previousWidth = window.innerWidth * window.devicePixelRatio;
-  previousHeight = window.innerHeight * window.devicePixelRatio;
+  previousWidth = window.innerWidth * window.devicePixelRatio - 5;
+  previousHeight = window.innerHeight * window.devicePixelRatio - 5;
 }

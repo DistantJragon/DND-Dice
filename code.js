@@ -1518,7 +1518,6 @@ function updateCanvasSize() {
     canvasWidth = myGameArea.canvas.width;
     canvasHeight = myGameArea.canvas.height;
     camera.x = (camera.x / previousWidth) * canvasWidth;
-    console.log(camera.x)
     camera.y = canvasHeight / 2;
     startCam.x = canvasWidth / 2;
     startCam.y = canvasHeight / 2;

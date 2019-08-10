@@ -7,11 +7,11 @@ Running online:
 
 Running locally:
   
-   Windows:
+   Windows*:
    
     Download all the files and run the “index.html” file.
 
-  Android: 
+  Android*: 
   
     Download all the files 
     Open “file:///sdcard/” or open “file:///storage/” in a browser depending on where your stored them. 
@@ -20,9 +20,9 @@ Running locally:
       (You can bookmark the page and it will bring you back to the program as long as you don’t move the files)
       (Or save it to your home screen)
 
-  iOS: 
+  iOS*: 
   
     I don’t think you can run local files on iOS without 3rd party apps.
 
-When changes are applied to the code, you will have to at least redownload code.js for changes to be applied. 
+*When changes are applied to the code, you will have to at least redownload code.js for changes to be applied. 
 Sometimes the whole D&D Dice folder will have to be redownloaded.

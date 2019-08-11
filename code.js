@@ -373,15 +373,25 @@ function sliders() {
   }
 }
 function spriteAnimation() {
-  if (warpingD4 == false) {
+  if (warpingD4 == false && D4.reachedDestination() == false) {
     D4.moveToIntendedPositions();
   }
-  D6.moveToIntendedPositions();
-  D8.moveToIntendedPositions();
-  D10.moveToIntendedPositions();
-  D00.moveToIntendedPositions();
-  D12.moveToIntendedPositions();
-  if (warpingD20 == false) {
+  if (D6.reachedDestination() == false) {
+    D6.moveToIntendedPositions();
+  }
+  if (D8.reachedDestination() == false) {
+    D8.moveToIntendedPositions();
+  }
+  if (D10.reachedDestination() == false) {
+    D10.moveToIntendedPositions();
+  }
+  if (D00.reachedDestination() == false) {
+    D00.moveToIntendedPositions();
+  }
+  if (D12.reachedDestination() == false) {
+    D12.moveToIntendedPositions();
+  }
+  if (warpingD20 == false && D20.reachedDestination() == false) {
      D20.moveToIntendedPositions();
   }
   if (warpingD4) {
@@ -746,6 +756,13 @@ function DiceType(diceLimit, pageNumber, D00Check) {
         this[i].destinationY = canvasHeight * yList[i][this.numberOfDice];
       }
     }
+    this.reachedDestination = function() {
+      for (var i = 0; i < diceLimit; i++) {
+        if (this[i].x != this[i].destinationX || this[i].y != this[i].destinationY) {
+          return false;
+        }
+      }
+    }
   } else {
     for (var i = 0; i < this.diceLimit * 2; i++) {
       this[i] = undefined;
@@ -766,8 +783,8 @@ function DiceType(diceLimit, pageNumber, D00Check) {
       var xList = [1/3, 2/3, -0.5, 1.5, -0.5, 1.5];
       var yList = [0.5, 0.5, 1.5, 1.5, 1.5, 1.5];
       for (var i = 0; i < diceLimit; i++) {
-        this[i * 2] = new Component(width, height, "D00.png", canvasWidth * (xList[i * 2] + this.pageNumber), canvasHeight * yList[i], "image");
-        this[i * 2 + 1] = new Component(width, height, "D10.png", canvasWidth * (xList[i * 2 + 1] + this.pageNumber), canvasHeight * yList[i], "image");
+        this[i * 2] = new Component(width, height, "D00.png", canvasWidth * (xList[i * 2] + this.pageNumber), canvasHeight * yList[i * 2], "image");
+        this[i * 2 + 1] = new Component(width, height, "D10.png", canvasWidth * (xList[i * 2 + 1] + this.pageNumber), canvasHeight * yList[i * 2 + 1], "image");
       }
     }
     this.changeDestinations = function() {
@@ -795,11 +812,18 @@ function DiceType(diceLimit, pageNumber, D00Check) {
         this[i].destinationY = canvasHeight * yList[i][this.numberOfDice];
       }
     }
+    this.reachedDestination = function() {
+      for (var i = 0; i < diceLimit * 2; i++) {
+        if (this[i].x != this[i].destinationX || this[i].y != this[i].destinationY) {
+          return false;
+        }
+      }
+    }
   }
 }
 function updateCanvasSize() {
-  if (previousWidth != window.innerWidth * window.devicePixelRatio || 
-      previousHeight != window.innerHeight * window.devicePixelRatio) {
+  if (previousWidth != window.innerWidth * window.devicePixelRatio - 5|| 
+      previousHeight != window.innerHeight * window.devicePixelRatio - 5) {
     myGameArea.canvas.width = 1000;
     myGameArea.canvas.height = 1000;
     myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio - 5;

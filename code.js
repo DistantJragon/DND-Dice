@@ -1,11 +1,11 @@
 // Spites
-var D4 = new DiceType(9, 0);
-var D6 = new DiceType(9, 1);
-var D8 = new DiceType(9, 2);
-var D10 = new DiceType(9, 3);
-var D00 = new DiceType(3, 4, "alert");
-var D12 = new DiceType(9, 5);
-var D20 = new DiceType(9, 6);
+var D4 = new DiceType(9, 0, 1);
+var D6 = new DiceType(9, 1, 2);
+var D8 = new DiceType(9, 2, 3);
+var D10 = new DiceType(9, 3, 4);
+var D00 = new DiceType(3, 4, 5);
+var D12 = new DiceType(9, 5, 6);
+var D20 = new DiceType(9, 6, 7);
 var diceBar, diceBall, diceBarIcon;
 var numBar, numBall, numBarIcon;
 var muter;
@@ -594,6 +594,10 @@ function listenForControls() {
     mousePress = false;
     mouseRelease = true;
   })
+  myGameArea.canvas.addEventListener('mouseleave', function (e) {
+    mousePress = false;
+    mouseRelease = true;
+  })
   myGameArea.canvas.addEventListener('touchstart', function (e) {
     cursor.x = (e.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
     cursor.y = (e.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
@@ -702,11 +706,11 @@ function Sound(src) {
     this.sound.pause();
   }
 }
-function DiceType(diceLimit, pageNumber, D00Check) {
+function DiceType(diceLimit, pageNumber, iDNumber) {
   this.numberOfDice = 0;
   this.diceLimit = diceLimit;
   this.pageNumber = pageNumber
-  if (D00Check === undefined) {
+  if (iDNumber !== 5) {
     for (var i = 0; i < this.diceLimit; i++) {
       this[i] = undefined;
     }

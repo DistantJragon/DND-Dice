@@ -58,7 +58,7 @@ function DiceType(diceLimit, pageNumber, iDNumber) {
   this.numberOfDice = 0;
   this.diceLimit = diceLimit;
   this.pageNumber = pageNumber;
-  if (iDNumber !== 5) {
+  if (iDNumber !== 4) {
     for (i = 0; i < this.diceLimit; i += 1) {
       this[i] = undefined;
     }
@@ -148,7 +148,23 @@ function DiceType(diceLimit, pageNumber, iDNumber) {
       var xList = {},
         yList = {},
         i;
-      // UNTITLED 3 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      xList[0] = [ 1/3,  1/3,  1/3]
+      yList[0] = [ 1/2,  1/3,  1/4]
+      
+      xList[1] = [ 2/3,  2/3,  2/3]
+      yList[1] = [ 1/2,  1/3,  1/4]
+      
+      xList[2] = [-1/2,  1/3,  1/3]
+      yList[2] = [ 3/2,  2/3,  1/2]
+      
+      xList[3] = [ 3/2,  2/3,  2/3]
+      yList[3] = [ 3/2,  2/3,  1/2]
+      
+      xList[4] = [-1/2, -1/2,  1/3]
+      yList[4] = [ 3/2,  3/2,  3/4]
+      
+      xList[5] = [ 3/2,  3/2,  2/3]
+      yList[5] = [ 3/2,  3/2,  3/4]
       for (i = 0; i < this.diceLimit * 2; i += 1) {
         this[i].destinationX = canvasWidth * (xList[i][this.numberOfDice] + this.pageNumber);
         this[i].destinationY = canvasHeight * yList[i][this.numberOfDice];
@@ -181,13 +197,13 @@ function Sound(src) {
 }
 
 // Spites
-var D4 = new DiceType(9, 0, 1);
-var D6 = new DiceType(9, 1, 2);
-var D8 = new DiceType(9, 2, 3);
-var D10 = new DiceType(9, 3, 4);
-var D00 = new DiceType(3, 4, 5);
-var D12 = new DiceType(9, 5, 6);
-var D20 = new DiceType(9, 6, 7);
+var D4 = new DiceType(9, 0, 0);
+var D6 = new DiceType(9, 1, 1);
+var D8 = new DiceType(9, 2, 2);
+var D10 = new DiceType(9, 3, 3);
+var D00 = new DiceType(3, 4, 4);
+var D12 = new DiceType(9, 5, 5);
+var D20 = new DiceType(9, 6, 6);
 var diceBar, diceBall, diceBarIcon;
 var numBar, numBall, numBarIcon;
 var muter;

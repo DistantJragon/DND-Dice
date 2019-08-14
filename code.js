@@ -6,6 +6,7 @@ var previousWidth;
 var previousHeight;
 var camera = {x: 0, y: 0, mouseX: 0, mouseY: 0};
 var startCam = {x: 0, y: 0};
+var diceWidth = 250;
 
 function Component(width, height, color, x, y, type) {
   "use strict";
@@ -26,6 +27,10 @@ function Component(width, height, color, x, y, type) {
   this.sourceX = 0;
   this.destinationX = x;
   this.destinationY = y;
+  this.row = 0;
+  this.column = 0;
+  this.awayX = 0;
+  this.awayY = 0;
   this.update = function () {
     var ctx = myGameArea.context;
     if (this.type === "text") {
@@ -52,91 +57,132 @@ function Component(width, height, color, x, y, type) {
     this.y += this.velocityY;
   };
 }
-function DiceType(diceLimit, pageNumber) {
+function DiceType(pageNumber) {
   "use strict";
   var i;
   this.numberOfDice = 0;
   this.pageNumber = pageNumber;
-  if (this.pageNumber !== 4) {
-    this.diceLimit = diceLimit;
-    this.createSprites = function (width, height, url) {
-      var i,
-        xList = [0.5, 1.5, -0.5, 1.5, 1.5, 1.5, 0.5, 1.5, -0.5],
-        yList = [0.5, -0.5, 1.5, 1.5, -0.5, 1.5, 1.5, 1.5, 1.5];
-      for (i = 0; i < this.diceLimit; i += 1) {
-        this[i] = new Component(width, height, url, canvasWidth * (xList[i] + this.pageNumber), canvasHeight * yList[i], "image");
+  this.maxRows = Math.floor((canvasHeight - 100) / diceWidth);
+  this.maxColumns = Math.floor((canvasWidth - 270) / diceWidth);
+  if (this.pageNumber === 4) {
+    this.maxColumns = this.maxColumns - (this.maxColumns % 2)
+  }
+  this.maxDice = this.maxColumns * this.maxRows;
+  this.numberOfRows = 1;
+  this.numberOfColumns = 1;
+  this.getDiceInRow = function (rowNumber) {
+    var i, diceList = [];
+    for (i = 1; i < this.maxDice + 1; i += 1) {
+      if (this[i].row = rowNumber) {
+        diceList.push(this[i]);
       }
+    }
+    return diceList;
+  }
+  if (this.pageNumber === 4) {
+    this.createSprites = function (width, height, url) {
+    var i, tempX, tempY, tempRows = 1, tempColumns = 1;
+    for (i = 1; i < this.maxDice + 1; i += 1) {
+      this[i] = new Component(width, height, url, canvasWidth, canvasHeight, "image");
+        tempX = tempRows / (this.maxRows + 1);
+        if (tempX >= 1/2) {
+          this[i].awayX = canvasWidth * 3 / 2;
+        } else {
+          this[i].awayX = canvasWidth * -1 / 2;
+        }
+        tempY = tempColumns / (this.maxColumns + 1);
+        if (tempY >= 1/2) {
+          this[i].awayY = canvasHeight * 3 / 2;
+        } else {
+          this[i].awayY = canvasHeight * -1 / 2;
+        }
+        this[i].x = this[i].awayX;
+        this[i].y = this[i].awayY;
+        this[i].destinationY = this[i].awayY;
+        this[i].destinationY = this[i].awayY;
+      }
+      this[1].x = (1/2 + this.pageNumber) * canvasWidth;
+      this[1].y = canvasHeight / 2;
+      this[1].destinationX = (1/2 + this.pageNumber) * canvasWidth;
+      this[1].destinationY = canvasHeight / 2;
     };
-    this.changeDestinations = function () {
-      var xList = {},
-        yList = {},
-        i;
-      xList[0] = [ 1/2,  1/3,  1/3,  1/3,  1/4,  1/4, 1/4, 1/4, 1/4]
-      yList[0] = [ 1/2,  1/2,  1/3,  1/3,  1/3,  1/3, 1/4, 1/4, 1/4]
-      xList[1] = [ 3/2,  2/3,  2/3,  2/3,  1/2,  1/2, 1/2, 1/2, 1/2]
-      yList[1] = [-1/2,  1/2,  1/3,  1/3,  1/3,  1/3, 1/4, 1/4, 1/4]
-      xList[2] = [-1/2, -1/2,  1/2,  1/3,  1/3,  1/4, 1/4, 1/4, 1/4]
-      yList[2] = [ 3/2,  3/2,  2/3,  2/3,  2/3,  2/3, 1/2, 1/2, 1/2]
-      xList[3] = [ 3/2,  3/2,  3/2,  2/3,  2/3,  1/2, 1/2, 1/2, 1/2]
-      yList[3] = [ 3/2,  3/2,  3/2,  2/3,  2/3,  2/3, 1/2, 1/2, 1/2]
-      xList[4] = [ 3/2,  3/2,  3/2,  3/2,  3/4,  3/4, 3/4, 3/4, 3/4]
-      yList[4] = [-1/2, -1/2, -1/2, -1/2,  1/3,  1/3, 1/4, 1/4, 1/4]
-      xList[5] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/4, 3/4, 3/4, 3/4]
-      yList[5] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  2/3, 1/2, 1/2, 1/2]
-      xList[6] = [-1/2, -1/2, -1/2, -1/2, -1/2, -1/2, 1/2, 1/3, 1/4]
-      yList[6] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/4, 3/4, 3/4]
-      xList[7] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/2, 2/3, 1/2]
-      yList[7] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/2, 3/4, 3/4]
-      xList[8] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/2, 3/2, 3/4]
-      yList[8] = [ 3/2,  3/2,  3/2,  3/2,  3/2,  3/2, 3/2, 3/2, 3/4]
-      for (i = 0; i < this.diceLimit; i += 1) {
-        this[i].destinationX = canvasWidth * (xList[i][this.numberOfDice] + this.pageNumber);
-        this[i].destinationY = canvasHeight * yList[i][this.numberOfDice];
+    this.changeDestinations = function (amountOfChange) {
+      var i;
+      if (amountOfChange === undefined) {
+        amountOfChange = 0;
+      }
+      for (i = 1; i < this.numberOfDice + 1; i += 1) {
+        this[i].destinationX = (this[i].row / (this.numberOfRows + 1) + this.pageNumber) * canvasWidth;
+        this[i].destinationY = (this[i].column / (this.numberOfColumns + 1)) * canvasHeight;
+      }
+      for (i = this.numberOfDice + 1; i < this.maxDice; i += 1) {
+        this[i].destinationX = this[i].awayX
+        this[i].destinationY = this[i].awayY
       }
     };
   } else {
-    this.diceLimit = diceLimit * 2;
-    this.createSprites = function (width, height) {
-      var xList = [1/3, 2/3, -0.5, 1.5, -0.5, 1.5],
-        yList = [0.5, 0.5, 1.5, 1.5, 1.5, 1.5],
-        i;
-      for (i = 0; i < this.diceLimit / 2; i += 1) {
-        this[i * 2] = new Component(width, height, "D00.png", canvasWidth * (xList[i * 2] + this.pageNumber), canvasHeight * yList[i * 2], "image");
-        this[i * 2 + 1] = new Component(width, height, "D10.png", canvasWidth * (xList[i * 2 + 1] + this.pageNumber), canvasHeight * yList[i * 2 + 1], "image");
+    this.createSprites = function (width, height, url) {
+      var i, tempX, tempY, tempRows = 1, tempColumns = 1;
+      for (i = 1; i < this.maxDice + 1; i += 1) {
+        this[i] = new Component(width, height, url, canvasWidth, canvasHeight, "image");
+        tempX = tempRows / (this.maxRows + 1);
+        if (tempX >= 1/2) {
+          this[i].awayX = canvasWidth * (3/2 + this.pageNumber);
+        } else {
+          this[i].awayX = canvasWidth * (-1/2 + this.pageNumber);
+        }
+        tempY = tempColumns / (this.maxColumns + 1);
+        if (tempY >= 1/2) {
+          this[i].awayY = canvasHeight * 3 / 2;
+        } else {
+          this[i].awayY = canvasHeight * -1 / 2;
+        }
+        this[i].x = this[i].awayX;
+        this[i].y = this[i].awayY;
+        this[i].destinationY = this[i].awayY;
+        this[i].destinationY = this[i].awayY;
+      }
+      this[1].x = (1/2 + this.pageNumber) * canvasWidth;
+      this[1].y = canvasHeight / 2;
+      this[1].destinationX = (1/2 + this.pageNumber) * canvasWidth;
+      this[1].destinationY = canvasHeight / 2;
+      this[1].destinationX = (1/2 + this.pageNumber) * canvasWidth;
+      this[1].destinationY = canvasHeight / 2;
+      this.numberOfDice = 1;
+    };
+    this.changeDestinations = function (amountOfChange) {
+      var i, tempRow = 1, tempColumn = 1;
+      if (amountOfChange === undefined) {
+        amountOfChange = 0;
+      }
+      if (this.numberOfDice === this.numberOfRows * this.numberOfColumns + amountOfChange) {
+        if (this.numberOfRows !== this.maxRows && this.numberOfRows < this.numberOfColumns) {
+          this.numberOfRows += 1;
+        } else if (this.numberOfColumns !== this.maxColumns) {
+          this.numberOfColumns += 1;
+        }
+      }
+      for (i = 1; i < this.numberOfDice + 1; i += 1) {
+        this[i].row = tempRow;
+        this[i].column = tempColumn;
+        this[i].destinationX = (this[i].column / (this.numberOfColumns + 1)) * canvasWidth;
+        this[i].destinationY = (this[i].row / (this.numberOfRows + 1) + this.pageNumber) * canvasHeight;
+        tempColumn += 1;
+        if (tempColumn > this.numberOfColumns) {
+          tempRow += 1;
+          tempColumn = 1;
+        }
+      }
+      for (i = this.numberOfDice + 1; i < this.maxDice + 1; i += 1) {
+        this[i].row = 0;
+        this[i].column = 0;
+        this[i].destinationX = this[i].awayX
+        this[i].destinationY = this[i].awayY
       }
     };
-    this.changeDestinations = function () {
-      var xList = {},
-        yList = {},
-        i;
-      xList[0] = [ 1/3,  1/3,  1/3]
-      yList[0] = [ 1/2,  1/3,  1/4]
-
-      xList[1] = [ 2/3,  2/3,  2/3]
-      yList[1] = [ 1/2,  1/3,  1/4]
-
-      xList[2] = [-1/2,  1/3,  1/3]
-      yList[2] = [ 3/2,  2/3,  1/2]
-
-      xList[3] = [ 3/2,  2/3,  2/3]
-      yList[3] = [ 3/2,  2/3,  1/2]
-
-      xList[4] = [-1/2, -1/2,  1/3]
-      yList[4] = [ 3/2,  3/2,  3/4]
-
-      xList[5] = [ 3/2,  3/2,  2/3]
-      yList[5] = [ 3/2,  3/2,  3/4]
-      for (i = 0; i < this.diceLimit; i += 1) {
-        this[i].destinationX = canvasWidth * (xList[i][this.numberOfDice] + this.pageNumber);
-        this[i].destinationY = canvasHeight * yList[i][this.numberOfDice];
-      }
-    };
-  }
-  for (i = 0; i < this.diceLimit; i += 1) {
-      this[i] = undefined;
   }
   this.moveToIntendedPositions = function () {
-      for (i = 0; i < this.diceLimit; i += 1) {
+      for (i = 1; i < this.maxDice + 1; i += 1) {
         this[i].velocityX = (this[i].destinationX - this[i].x) / 10;
         if (Math.abs(this[i].x - this[i].destinationX) < 1) {
           this[i].x = this[i].destinationX;
@@ -149,7 +195,7 @@ function DiceType(diceLimit, pageNumber) {
 };
   this.reachedDestination = function () {
     var i;
-    for (i = 0; i < this.diceLimit; i += 1) {
+    for (i = 1; i < this.maxDice; i += 1) {
       if (this[i].x !== this[i].destinationX || this[i].y !== this[i].destinationY) {
         return false;
       }
@@ -173,27 +219,28 @@ function Sound(src) {
 }
 
 // Spites
-var D4 = new DiceType(9, 0);
-var D6 = new DiceType(9, 1);
-var D8 = new DiceType(9, 2);
-var D10 = new DiceType(9, 3);
-var D00 = new DiceType(3, 4);
-var D12 = new DiceType(9, 5);
-var D20 = new DiceType(9, 6);
+var D4, D6, D8, D10, D00, D12, D20;
 var diceBar, diceBall, diceBarIcon;
 var numBar, numBall, numBarIcon;
 var muter;
 
 function allSprites() {
   "use strict";
-  D4.createSprites(250, 218, "D4.png", 0);
-  D6.createSprites(250, 250, "D6.png", 1);
-  D8.createSprites(250, 250, "D8.png", 2);
-  D10.createSprites(250, 250, "D10.png", 3);
-  D00.createSprites(250, 250, 4);
-  D12.createSprites(250, 250, "D12.png", 5);
-  D20.createSprites(250, 218, "D20.png", 6);
+  D4 = new DiceType(0);
+  D6 = new DiceType(1);
+  D8 = new DiceType(2);
+  D10 = new DiceType(3);
+  D00 = new DiceType(4);
+  D12 = new DiceType(5);
+  D20 = new DiceType(6);
   
+  D4.createSprites(diceWidth, diceWidth / 2 * Math.sqrt(3), "D4.png");
+  D6.createSprites(diceWidth, diceWidth, "D6.png");
+  D8.createSprites(diceWidth, diceWidth, "D8.png");
+  D10.createSprites(diceWidth, diceWidth, "D10.png");
+  D00.createSprites(diceWidth, diceWidth, "D00.png");
+  D12.createSprites(diceWidth, diceWidth, "D12.png");
+  D20.createSprites(diceWidth, diceWidth / 2 * Math.sqrt(3), "D20.png");
   diceBar = new Component(800, 62, "Dice Bar.png", 425, 625, "image");
   diceBall = new Component(37, 37, "Ball.png", 22, 375, "image");
   diceBarIcon = new Component(62, 62, "Dice Bar Icon.png", 425, 625, "image");
@@ -248,7 +295,7 @@ var toggle4 = false;
 var toggle5 = false;
 var timer1 = 0;
 var timer2 = 0;
-var timer3 = 10;
+var timer3 = 0;
 var timer4 = 0;
 var timer5 = 0;
 var timer6 = 0;
@@ -319,25 +366,25 @@ function goLeft() {
 }
 function numUp() {
   "use strict";
-  if (camera.x === canvasWidth * 0.5 && D4.numberOfDice < 8) { D4.numberOfDice = D4.numberOfDice + 1; D4.changeDestinations();
-    } else if (camera.x === canvasWidth * 1.5 && D6.numberOfDice < 8) { D6.numberOfDice = D6.numberOfDice + 1; D6.changeDestinations();
-    } else if (camera.x === canvasWidth * 2.5 && D8.numberOfDice < 8) { D8.numberOfDice = D8.numberOfDice + 1; D8.changeDestinations();
-    } else if (camera.x === canvasWidth * 3.5 && D10.numberOfDice < 8) { D10.numberOfDice = D10.numberOfDice + 1; D10.changeDestinations();
-    } else if (camera.x === canvasWidth * 4.5 && D00.numberOfDice < 2) { D00.numberOfDice = D00.numberOfDice + 1; D00.changeDestinations();
-    } else if (camera.x === canvasWidth * 5.5 && D12.numberOfDice < 8) { D12.numberOfDice = D12.numberOfDice + 1; D12.changeDestinations();
-    } else if (camera.x === canvasWidth * 6.5 && D20.numberOfDice < 8) { D20.numberOfDice = D20.numberOfDice + 1; D20.changeDestinations();
+  if (camera.x === canvasWidth * 0.5 && D4.numberOfDice < D4.maxDice) { D4.numberOfDice += 1; D4.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 1.5 && D6.numberOfDice <= D6.maxDice) { D6.numberOfDice += 1; D6.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 2.5 && D8.numberOfDice <= D8.maxDice) { D8.numberOfDice += 1; D8.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 3.5 && D10.numberOfDice <= D10.maxDice) { D10.numberOfDice += 1; D10.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 4.5 && D00.numberOfDice <= D00.maxDice) { D00.numberOfDice += 2; D00.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 5.5 && D12.numberOfDice <= D12.maxDice) { D12.numberOfDice += 1; D12.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 6.5 && D20.numberOfDice <= D20.maxDice) { D20.numberOfDice += 1; D20.changeDestinations(+1);
     } else if (muteAll === -1) { errorSound.play(); }
   swipeCheck = false;
 }
 function numDown() {
   "use strict";
-  if (camera.x === canvasWidth * 0.5 && D4.numberOfDice > 0) { D4.numberOfDice = D4.numberOfDice - 1; D4.changeDestinations();
-    } else if (camera.x === canvasWidth * 1.5 && D6.numberOfDice > 0) { D6.numberOfDice = D6.numberOfDice - 1; D6.changeDestinations();
-    } else if (camera.x === canvasWidth * 2.5 && D8.numberOfDice > 0) { D8.numberOfDice = D8.numberOfDice - 1; D8.changeDestinations();
-    } else if (camera.x === canvasWidth * 3.5 && D10.numberOfDice > 0) { D10.numberOfDice = D10.numberOfDice - 1; D10.changeDestinations();
-    } else if (camera.x === canvasWidth * 4.5 && D00.numberOfDice > 0) { D00.numberOfDice = D00.numberOfDice - 1; D00.changeDestinations();
-    } else if (camera.x === canvasWidth * 5.5 && D12.numberOfDice > 0) { D12.numberOfDice = D12.numberOfDice - 1; D12.changeDestinations();
-    } else if (camera.x === canvasWidth * 6.5 && D20.numberOfDice > 0) { D20.numberOfDice = D20.numberOfDice - 1; D20.changeDestinations();
+  if (camera.x === canvasWidth * 0.5 && D4.numberOfDice > 0) { D4.numberOfDice -= 1; D4.changeDestinations(-1);
+    } else if (camera.x === canvasWidth * 1.5 && D6.numberOfDice > 0) { D6.numberOfDice -= 1; D6.changeDestinations(-1);
+    } else if (camera.x === canvasWidth * 2.5 && D8.numberOfDice > 0) { D8.numberOfDice -= 1; D8.changeDestinations(-1);
+    } else if (camera.x === canvasWidth * 3.5 && D10.numberOfDice > 0) { D10.numberOfDice -= 1; D10.changeDestinations(-1);
+    } else if (camera.x === canvasWidth * 4.5 && D00.numberOfDice > 0) { D00.numberOfDice -= 2; D00.changeDestinations(-1);
+    } else if (camera.x === canvasWidth * 5.5 && D12.numberOfDice > 0) { D12.numberOfDice -= 1; D12.changeDestinations(-1);
+    } else if (camera.x === canvasWidth * 6.5 && D20.numberOfDice > 0) { D20.numberOfDice -= 1; D20.changeDestinations(-1);
     } else if (muteAll === -1) { errorSound.play(); }
   swipeCheck = false;
 }
@@ -606,19 +653,19 @@ function sliders() {
   }
   if (numSlideCheck) {
     if (camera.x === canvasWidth * 0.5) {
-      D4.changeDestinations();
+      D4.changeDestinations(0);
     } else if (camera.x === canvasWidth * 1.5) {
-      D6.changeDestinations();
+      D6.changeDestinations(0);
     } else if (camera.x === canvasWidth * 2.5) {
-      D8.changeDestinations();
+      D8.changeDestinations(0);
     } else if (camera.x === canvasWidth * 3.5) {
-      D10.changeDestinations();
+      D10.changeDestinations(0);
     } else if (camera.x === canvasWidth * 4.5) {
-      D00.changeDestinations();
+      D00.changeDestinations(0);
     } else if (camera.x === canvasWidth * 5.5) {
-      D12.changeDestinations();
+      D12.changeDestinations(0);
     } else if (camera.x === canvasWidth * 6.5) {
-      D20.changeDestinations();
+      D20.changeDestinations(0);
     }
   }
 }
@@ -647,23 +694,23 @@ function spriteAnimation() {
     D20.moveToIntendedPositions();
   }
   if (warpingD4) {
-    for (i = 0; i < D4.diceLimit; i += 1) {
+    for (i = 0; i < D4.maxDice; i += 1) {
       D4[i].x = D4[i].destinationX + canvasWidth * 7;
     }
     if ((toggle4 === false && camera.x === canvasWidth * 0.5) || (toggle5 && camera.x === canvasWidth * 6.5)) {
       warpingD4 = false;
-      for (i = 0; i < D4.diceLimit; i += 1) {
+      for (i = 0; i < D4.maxDice; i += 1) {
         D4[i].x = D4[i].destinationX;
       }
     }
   }
   if (warpingD20) {
-    for (i = 0; i < D4.diceLimit; i += 1) {
+    for (i = 0; i < D4.maxDice; i += 1) {
       D20[i].x = D20[i].destinationX - canvasWidth * 7;
     }
     if ((toggle5 === false && camera.x === canvasWidth * 6.5) || (toggle4 && camera.x === canvasWidth * 0.5)) {
       warpingD20 = false;
-      for (i = 0; i < D4.diceLimit; i += 1) {
+      for (i = 0; i < D4.maxDice; i += 1) {
         D20[i].x = D20[i].destinationX;
       }
     }
@@ -766,13 +813,13 @@ function updateCanvasSize() {
     camera.y = canvasHeight / 2;
     startCam.x = canvasWidth / 2;
     startCam.y = canvasHeight / 2;
-    D4.changeDestinations();
-    D6.changeDestinations();
-    D8.changeDestinations();
-    D10.changeDestinations();
-    D00.changeDestinations();
-    D12.changeDestinations();
-    D20.changeDestinations();
+    D4.changeDestinations(0);
+    D6.changeDestinations(0);
+    D8.changeDestinations(0);
+    D10.changeDestinations(0);
+    D00.changeDestinations(0);
+    D12.changeDestinations(0);
+    D20.changeDestinations(0);
     D4Text1.x = canvasWidth * 0.5 - 15;
     D4Text2.x = canvasWidth * 7.5 - 15;
     D6Text1.x = canvasWidth * 1.5 - 15;

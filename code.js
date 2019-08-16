@@ -64,123 +64,110 @@ function DiceType(pageNumber) {
   this.pageNumber = pageNumber;
   this.maxRows = Math.floor((canvasHeight - 100) / diceWidth);
   this.maxColumns = Math.floor((canvasWidth - 270) / diceWidth);
-  if (this.pageNumber === 4) {
-    this.maxColumns = this.maxColumns - (this.maxColumns % 2)
-  }
   this.maxDice = this.maxColumns * this.maxRows;
   this.numberOfRows = 1;
   this.numberOfColumns = 1;
+  this.tempRow;
+  this.tempColumn;
   this.getDiceInRow = function (rowNumber) {
     var i, diceList = [];
     for (i = 1; i < this.maxDice + 1; i += 1) {
-      if (this[i].row = rowNumber) {
+      if (this[i].row === rowNumber) {
         diceList.push(this[i]);
       }
     }
     return diceList;
   }
-  if (this.pageNumber === 4) {
-    this.createSprites = function (width, height, url) {
-    var i, tempX, tempY, tempRows = 1, tempColumns = 1;
+  this.createSprites = function (width, height, url) {
+    var i, tempX, tempY, tempRows = 1, tempColumns = 1, tempNumberOfRows = 1, tempNumberOfColumns = 1;
     for (i = 1; i < this.maxDice + 1; i += 1) {
       this[i] = new Component(width, height, url, canvasWidth, canvasHeight, "image");
-        tempX = tempRows / (this.maxRows + 1);
-        if (tempX >= 1/2) {
-          this[i].awayX = canvasWidth * 3 / 2;
-        } else {
-          this[i].awayX = canvasWidth * -1 / 2;
+      tempX = tempColumns / (this.maxColumns + 1);
+      if (tempX >= 1/2) {
+        this[i].awayX = canvasWidth * (3/2 + this.pageNumber);
+      } else {
+        this[i].awayX = canvasWidth * (-1/2 + this.pageNumber);
+      }
+      tempY = tempRows / (this.maxRows + 1);
+      if (tempY >= 1/2) {
+        this[i].awayY = canvasHeight * 3 / 2;
+      } else {
+        this[i].awayY = canvasHeight * -1 / 2;
+      }
+      this[i].x = this[i].awayX;
+      this[i].y = this[i].awayY;
+      this[i].destinationY = this[i].awayY;
+      this[i].destinationY = this[i].awayY;
+      if (i === tempRows * tempColumns) {
+        if (tempRows !== this.maxRows && (tempRows < tempColumns || tempColumns === this.maxColumns)) {
+          tempNumberOfRows += 1
+          tempRows += 1;
+          tempColumns = 1;
+        } else if (tempColumns !== this.maxColumns) {
+          tempNumberOfColumns += 1
+          tempColumns += 1;
+          tempRows = 1;
         }
-        tempY = tempColumns / (this.maxColumns + 1);
-        if (tempY >= 1/2) {
-          this[i].awayY = canvasHeight * 3 / 2;
-        } else {
-          this[i].awayY = canvasHeight * -1 / 2;
+      } else {
+        if (tempColumns < tempNumberOfColumns) {
+          tempColumns += 1;
+        } else if (tempRows < tempNumberOfRows) {
+          tempRows += 1;
         }
-        this[i].x = this[i].awayX;
-        this[i].y = this[i].awayY;
-        this[i].destinationY = this[i].awayY;
-        this[i].destinationY = this[i].awayY;
       }
-      this[1].x = (1/2 + this.pageNumber) * canvasWidth;
-      this[1].y = canvasHeight / 2;
-      this[1].destinationX = (1/2 + this.pageNumber) * canvasWidth;
-      this[1].destinationY = canvasHeight / 2;
-    };
-    this.changeDestinations = function (amountOfChange) {
-      var i;
-      if (amountOfChange === undefined) {
-        amountOfChange = 0;
-      }
-      for (i = 1; i < this.numberOfDice + 1; i += 1) {
-        this[i].destinationX = (this[i].row / (this.numberOfRows + 1) + this.pageNumber) * canvasWidth;
-        this[i].destinationY = (this[i].column / (this.numberOfColumns + 1)) * canvasHeight;
-      }
-      for (i = this.numberOfDice + 1; i < this.maxDice; i += 1) {
-        this[i].destinationX = this[i].awayX
-        this[i].destinationY = this[i].awayY
-      }
-    };
-  } else {
-    this.createSprites = function (width, height, url) {
-      var i, tempX, tempY, tempRows = 1, tempColumns = 1;
-      for (i = 1; i < this.maxDice + 1; i += 1) {
-        this[i] = new Component(width, height, url, canvasWidth, canvasHeight, "image");
-        tempX = tempRows / (this.maxRows + 1);
-        if (tempX >= 1/2) {
-          this[i].awayX = canvasWidth * (3/2 + this.pageNumber);
-        } else {
-          this[i].awayX = canvasWidth * (-1/2 + this.pageNumber);
-        }
-        tempY = tempColumns / (this.maxColumns + 1);
-        if (tempY >= 1/2) {
-          this[i].awayY = canvasHeight * 3 / 2;
-        } else {
-          this[i].awayY = canvasHeight * -1 / 2;
-        }
-        this[i].x = this[i].awayX;
-        this[i].y = this[i].awayY;
-        this[i].destinationY = this[i].awayY;
-        this[i].destinationY = this[i].awayY;
-      }
-      this[1].x = (1/2 + this.pageNumber) * canvasWidth;
-      this[1].y = canvasHeight / 2;
-      this[1].destinationX = (1/2 + this.pageNumber) * canvasWidth;
-      this[1].destinationY = canvasHeight / 2;
-      this[1].destinationX = (1/2 + this.pageNumber) * canvasWidth;
-      this[1].destinationY = canvasHeight / 2;
-      this.numberOfDice = 1;
-    };
-    this.changeDestinations = function (amountOfChange) {
-      var i, tempRow = 1, tempColumn = 1;
-      if (amountOfChange === undefined) {
-        amountOfChange = 0;
-      }
+    }
+    this[1].x = (1/2 + this.pageNumber) * canvasWidth;
+    this[1].y = canvasHeight / 2;
+    this[1].destinationX = (1/2 + this.pageNumber) * canvasWidth;
+    this[1].destinationY = canvasHeight / 2;
+    this[1].row = 1;
+    this[1].column = 1;
+    this.numberOfDice = 1;
+  };
+  this.changeDestinations = function (amountOfChange) {
+    var i;
+    if (amountOfChange === undefined) {
+      amountOfChange = 0;
+    }
+    if (this.tempRow === undefined && this.tempColumn === undefined) {
+      this.tempRow = 1;
+      this.tempColumn = 1;
+    }
+    if (amountOfChange === 1) {
       if (this.numberOfDice === this.numberOfRows * this.numberOfColumns + amountOfChange) {
-        if (this.numberOfRows !== this.maxRows && this.numberOfRows < this.numberOfColumns) {
+        if (this.numberOfRows !== this.maxRows && (this.numberOfRows < this.numberOfColumns || this.numberOfColumns === this.maxColumns)) {
           this.numberOfRows += 1;
+          this.tempRow = this.numberOfRows;
+          this.tempColumn = 1;
         } else if (this.numberOfColumns !== this.maxColumns) {
           this.numberOfColumns += 1;
+          this.tempRow = 1;
+          this.tempColumn += 1;
+        }
+      } else {
+        if (this.tempRow < this.numberOfRows) {
+          this.tempRow += 1;
+        }
+        if (this.tempColumn < this.numberOfColumns) {
+          this.tempColumn += 1;
         }
       }
       for (i = 1; i < this.numberOfDice + 1; i += 1) {
-        this[i].row = tempRow;
-        this[i].column = tempColumn;
-        this[i].destinationX = (this[i].column / (this.numberOfColumns + 1)) * canvasWidth;
-        this[i].destinationY = (this[i].row / (this.numberOfRows + 1) + this.pageNumber) * canvasHeight;
-        tempColumn += 1;
-        if (tempColumn > this.numberOfColumns) {
-          tempRow += 1;
-          tempColumn = 1;
-        }
+        this[this.numberOfDice].row = this.tempRow;
+        this[this.numberOfDice].column = this.tempColumn;
+        this[i].destinationX = ((this[i].column / (this.getDiceInRow(this[i].row).length + 1)) + this.pageNumber) * canvasWidth;
+        this[i].destinationY = (this[i].row / (this.numberOfRows + 1)) * canvasHeight;
       }
       for (i = this.numberOfDice + 1; i < this.maxDice + 1; i += 1) {
         this[i].row = 0;
         this[i].column = 0;
         this[i].destinationX = this[i].awayX
         this[i].destinationY = this[i].awayY
+        this[i].sourceX = 0;
       }
-    };
-  }
+    }
+    
+  };
   this.moveToIntendedPositions = function () {
       for (i = 1; i < this.maxDice + 1; i += 1) {
         this[i].velocityX = (this[i].destinationX - this[i].x) / 10;
@@ -195,7 +182,7 @@ function DiceType(pageNumber) {
 };
   this.reachedDestination = function () {
     var i;
-    for (i = 1; i < this.maxDice; i += 1) {
+    for (i = 1; i < this.maxDice + 1; i += 1) {
       if (this[i].x !== this[i].destinationX || this[i].y !== this[i].destinationY) {
         return false;
       }
@@ -367,12 +354,12 @@ function goLeft() {
 function numUp() {
   "use strict";
   if (camera.x === canvasWidth * 0.5 && D4.numberOfDice < D4.maxDice) { D4.numberOfDice += 1; D4.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 1.5 && D6.numberOfDice <= D6.maxDice) { D6.numberOfDice += 1; D6.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 2.5 && D8.numberOfDice <= D8.maxDice) { D8.numberOfDice += 1; D8.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 3.5 && D10.numberOfDice <= D10.maxDice) { D10.numberOfDice += 1; D10.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 4.5 && D00.numberOfDice <= D00.maxDice) { D00.numberOfDice += 2; D00.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 5.5 && D12.numberOfDice <= D12.maxDice) { D12.numberOfDice += 1; D12.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 6.5 && D20.numberOfDice <= D20.maxDice) { D20.numberOfDice += 1; D20.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 1.5 && D6.numberOfDice < D6.maxDice) { D6.numberOfDice += 1; D6.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 2.5 && D8.numberOfDice < D8.maxDice) { D8.numberOfDice += 1; D8.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 3.5 && D10.numberOfDice < D10.maxDice) { D10.numberOfDice += 1; D10.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 4.5 && D00.numberOfDice < D00.maxDice) { D00.numberOfDice += 1; D00.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 5.5 && D12.numberOfDice < D12.maxDice) { D12.numberOfDice += 1; D12.changeDestinations(+1);
+    } else if (camera.x === canvasWidth * 6.5 && D20.numberOfDice < D20.maxDice) { D20.numberOfDice += 1; D20.changeDestinations(+1);
     } else if (muteAll === -1) { errorSound.play(); }
   swipeCheck = false;
 }
@@ -393,31 +380,31 @@ function roll() {
   var i;
   // Rolls dice when camera is on them
   if (camera.x === canvasWidth * 0.5) {
-    for (i = 0; i < D4.numberOfDice + 1; i += 1) {
+    for (i = 1; i < D4.numberOfDice + 1; i += 1) {
       D4[i].sourceX = randomNumber(1, 4) * D4[i].width;
     }
   } else if (camera.x === canvasWidth * 1.5) {
-    for (i = 0; i < D6.numberOfDice + 1; i += 1) {
+    for (i = 1; i < D6.numberOfDice + 1; i += 1) {
       D6[i].sourceX = randomNumber(1, 6) * D6[i].width;
     }
   } else if (camera.x === canvasWidth * 2.5) {
-    for (i = 0; i < D8.numberOfDice + 1; i += 1) {
+    for (i = 1; i < D8.numberOfDice + 1; i += 1) {
       D8[i].sourceX = randomNumber(1, 8) * D8[i].width;
     }
   } else if (camera.x === canvasWidth * 3.5) {
-    for (i = 0; i < D10.numberOfDice + 1; i += 1) {
+    for (i = 1; i < D10.numberOfDice + 1; i += 1) {
       D10[i].sourceX = randomNumber(1, 10) * D10[i].width;
     }
   } else if (camera.x === canvasWidth * 4.5) {
-    for (i = 0; i < (D00.numberOfDice + 1) * 2; i += 1) {
+    for (i = 1; i < (D00.numberOfDice + 1) * 2; i += 1) {
       D00[i].sourceX = randomNumber(1, 10) * D00[i].width;
     }
   } else if (camera.x === canvasWidth * 5.5) {
-    for (i = 0; i < D12.numberOfDice + 1; i += 1) {
+    for (i = 1; i < D12.numberOfDice + 1; i += 1) {
       D12[i].sourceX = randomNumber(1, 12) * D12[i].width;
     }
   } else if (camera.x === canvasWidth * 6.5) {
-    for (i = 0; i < D20.numberOfDice + 1; i += 1) {
+    for (i = 1; i < D20.numberOfDice + 1; i += 1) {
       D20[i].sourceX = randomNumber(1, 20) * D20[i].width;
     }
   }
@@ -643,9 +630,6 @@ function sliders() {
     D10.numberOfDice = currentNumberOfDice;
   } else if (camera.x === canvasWidth * 4.5) {
     D00.numberOfDice = currentNumberOfDice;
-    if (D00.numberOfDice > 2) {
-      D00.numberOfDice = 2;
-    }
   } else if (camera.x === canvasWidth * 5.5) {
     D12.numberOfDice = currentNumberOfDice;
   } else if (camera.x === canvasWidth * 6.5) {

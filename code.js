@@ -802,7 +802,8 @@ function sliders() {
     }
   }
   if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false && 
-      mousePressOver(numberSlider.fill) == false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false) {
+      mousePressOver(numberSlider.fill) == false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false &&
+     swipeCheck === false) {
     diceSlideCheck = true;
   }
   if (diceSlideCheck) {
@@ -816,8 +817,9 @@ function sliders() {
     diceSlider.ball.x = diceSlider.end.x;
   }
   numberSlider.ball.x = numberSlider.start.x;
-  if (mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end) && swipeCheck === false && 
-      mousePressOver(diceSlider.fill) == false && mousePressOver(diceSlider.start) === false && mousePressOver(diceSlider.end) === false) {
+  if ((mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end)) && swipeCheck === false && 
+      mousePressOver(diceSlider.fill) == false && mousePressOver(diceSlider.start) === false && mousePressOver(diceSlider.end) === false &&
+     swipeCheck === false) {
     numSlideCheck = true;
   }
   if (numSlideCheck && getDiceGroupAtCurrentPage() !== undefined) {

@@ -404,9 +404,9 @@ function allSprites() {
   diceSlider.end.y = diceSlider.icon.y;
   
   numberSlider.start.x = numberSlider.icon.x;
-  numberSlider.start.y = numberSlider.icon.y - numberSlider.icon.height / 2 - 10 - numberSlider.start.width / 2;
+  numberSlider.start.y = 25 + numberSlider.start.height / 2;
   numberSlider.end.x = numberSlider.start.x;
-  numberSlider.end.y = 25 + numberSlider.end.height / 2;
+  numberSlider.end.y = numberSlider.icon.y - numberSlider.icon.height / 2 - 10 - numberSlider.start.width / 2;
   
   diceSlider.fill.x = diceSlider.start.x;
   diceSlider.fill.y = diceSlider.start.y - diceSlider.start.width / 2;
@@ -648,10 +648,8 @@ function control() {
   // Prepare to determine a swipe or tap
   if (mousePressed && 
       mouseIsOver(muter) === false && 
-      mouseIsOver(diceSlider.fill) === false && 
-      mouseIsOver(diceSlider.start) === false && 
-      mouseIsOver(diceSlider.end) === false && 
-      numSlideCheck === false) {
+      mouseIsOver(diceSlider.fill) === false && mouseIsOver(diceSlider.start) === false && mouseIsOver(diceSlider.end) === false && 
+      mousePressOver(numberSlider.fill) == false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false) {
     previousCursorX = cursor.x;
     previousCursorY = cursor.y;
     swipeCheck = true;
@@ -762,13 +760,12 @@ function sliders() {
   if (getDiceGroupAtCurrentPage() !== undefined) {
     if (getDiceGroupAtCurrentPage() === D00) {
       distanceBetweenNumberBarSlots = numberSlider.fill.height * 2 / (getDiceGroupAtCurrentPage().maxDice - 2);
-      numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice / 2 - 1) * distanceBetweenNumberBarSlots + numberSlider.start.y;
     } else {
       distanceBetweenNumberBarSlots = numberSlider.fill.height / (getDiceGroupAtCurrentPage().maxDice - 1);
-      numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice - 1) * distanceBetweenNumberBarSlots + numberSlider.start.y;
     }
   }
-  if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false && numSlideCheck === false) {
+  if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false && 
+      mousePressOver(numberSlider.fill) == false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false) {
     diceSlideCheck = true;
   }
   if (diceSlideCheck) {
@@ -776,18 +773,48 @@ function sliders() {
   } else {
     diceSlider.ball.x = (camera.x / canvasWidth - 0.5) * distanceBetweenDiceBarSlots + diceSlider.start.x;
   }
-  if (camera.x < canvasWidth / 2) {
+  if (diceSlider.ball.x < diceSlider.start.x) {
     diceSlider.ball.x = diceSlider.start.x;
-  } else if (camera.x > canvasWidth * 6.5) {
-    diceSlider.ball.x = 6 * distanceBetweenDiceBarSlots + diceSlider.start.x;
-  }
-  if (diceSlideCheck) {
-    (diceSlider.ball.x - diceSlider.start.x) / distanceBetweenDiceBarSlots = (camera.x / canvasWidth - 0.5);
+  } else if (diceSlider.ball.x > diceSlider.end.x) {
+    diceSlider.ball.x = diceSlider.end.x;
   }
   numberSlider.ball.x = numberSlider.start.x;
+  if (mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end) && swipeCheck === false && 
+      mousePressOver(diceSlider.fill) == false && mousePressOver(diceSlider.start) === false && mousePressOver(diceSlider.end) === false) {
+    numSlideCheck = true;
+  }
+  if (numSlideCheck && getDiceGroupAtCurrentPage() !== undefined) {
+    numberSlider.ball.y = camera.mouseY;
+    if (numberSlider.ball.y < numberSlider.start.y) {
+      numberSlider.ball.y = numberSlider.start.y;
+    } else if (numberSlider.ball.y > numberSlider.end.y) {
+      numberSlider.ball.y = numberSlider.end.y;
+    }
+    if (getDiceGroupAtCurrentPage() === D00) {
+      while (getDiceGroupAtCurrentPage().numberOfDice < (Math.round((numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots * -1) + 1) * 2) {
+        numUp();
+      }
+      while (getDiceGroupAtCurrentPage().numberOfDice > (Math.round((numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots * -1) + 1) * 2) {
+        numDown();
+      }
+    } else if (getDiceGroupAtCurrentPage() !== undefined) {
+      while (getDiceGroupAtCurrentPage().numberOfDice < (Math.round(numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots * -1) + 1) {
+        numUp();
+      }
+      while (getDiceGroupAtCurrentPage().numberOfDice > (Math.round(numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots * -1) + 1) {
+        numDown();
+      }
+    }
+  } else if (getDiceGroupAtCurrentPage() === D00) {
+    numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice / 2 - 1) * distanceBetweenNumberBarSlots * -1 + numberSlider.end.y;
+  } else if (getDiceGroupAtCurrentPage() !== undefined) {
+    numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice - 1) * distanceBetweenNumberBarSlots * -1 + numberSlider.end.y;
+  }
   if (mouseRelease) {
-    
     diceSlideCheck = false;
+    numSlideCheck = false;
+  }
+  if (getDiceGroupAtCurrentPage() === undefined) {
     numSlideCheck = false;
   }
 }
@@ -840,6 +867,7 @@ function spriteAnimation() {
 }
 function cameraPos() {
   "use strict";
+  var distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
   if (toggle4) { // Move right
     camera.x = camera.x + canvasWidth / 20;
   }
@@ -851,6 +879,18 @@ function cameraPos() {
   }
   if (camera.x === canvasWidth * 7.5) {
     camera.x = canvasWidth / 2;
+  }
+  if (diceSlideCheck) {
+    camera.x = ((diceSlider.ball.x - diceSlider.start.x) / distanceBetweenDiceBarSlots + 0.5) * canvasWidth;
+    if (camera.x < canvasWidth / 2) {
+      camera.x = canvasWidth / 2;
+    } else if (camera.x > canvasWidth * 6.5) {
+      camera.x = canvasWidth * 6.5;
+    }
+  }
+  if (mouseRelease) {
+    camera.x = (Math.round((diceSlider.ball.x - diceSlider.start.x) / distanceBetweenDiceBarSlots) + 0.5) * canvasWidth;
+
   }
   camera.mouseX = cursor.x + camera.x - startCam.x;
   camera.mouseY = cursor.y + camera.y - startCam.y;

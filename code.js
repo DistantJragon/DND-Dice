@@ -367,6 +367,7 @@ var muter;
 
 function allSprites() {
   "use strict";
+  var i, distanceBetweenDiceBarSlots, distanceBetweenNumberBarSlots;
   D4 = new DiceType(0);
   D6 = new DiceType(1);
   D8 = new DiceType(2);
@@ -385,12 +386,10 @@ function allSprites() {
   diceSlider.start = new Component(62, 62, "Slider.png", 425, 625, "image");
   diceSlider.end = new Component(62, 62, "Slider.png", 22, 375, "image");
   diceSlider.fill = new Component(62, 62, "#bfbfbf", 22, 375);
-  diceSlider.ball = new Component(37, 37, "Ball.png", 22, 375, "image");
   diceSlider.icon = new Component(62, 62, "Dice Bar Icon.png", 425, 625, "image");
   numberSlider.start = new Component(62, 62, "Slider.png", 425, 625, "image");
   numberSlider.end = new Component(62, 62, "Slider.png", 22, 375, "image");
   numberSlider.fill = new Component(62, 62, "#bfbfbf", 22, 375);
-  numberSlider.ball = new Component(37, 37, "Ball.png", 22, 375, "image");
   numberSlider.icon = new Component(62, 62, "Number Sign.png", 425, 625, "image");
   
   diceSlider.icon.x = 25 + diceSlider.icon.width / 2 + camera.x - canvasWidth / 2;
@@ -418,10 +417,29 @@ function allSprites() {
   numberSlider.fill.width = numberSlider.end.x + numberSlider.end.width / 2 - numberSlider.fill.x;
   numberSlider.fill.height = numberSlider.end.y - numberSlider.fill.y;
   
+  distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
+  distanceBetweenNumberBarSlots = numberSlider.fill.height / (getDiceGroupAtCurrentPage().maxDice - 1);
+  
+  diceSlider.slots = {};
+  for (i = 0; i < 7; i += 1) {
+    diceSlider.slots[i] = new Component(12, 12, "Slot.png", 0, 0, "image");
+    diceSlider.slots[i].x = i * distanceBetweenDiceBarSlots + diceSlider.start.x;
+    diceSlider.slots[i].y = diceSlider.icon.y;
+  }
+  numberSlider.slots = {};
+  for (i = 0; i < D4.maxDice; i += 1) {
+    numberSlider.slots[i] = new Component(12, 12, "Slot.png", 0, 0, "image");
+    numberSlider.slots[i].x = numberSlider.icon.x;
+    numberSlider.slots[i].y = i * distanceBetweenNumberBarSlots + numberSlider.start.y;
+  }
+  
+  diceSlider.ball = new Component(37, 37, "Ball.png", 22, 375, "image");
   diceSlider.ball.x = diceSlider.start.x;
   diceSlider.ball.y = diceSlider.start.y;
+  numberSlider.ball = new Component(37, 37, "Ball.png", 22, 375, "image");
   numberSlider.ball.x = numberSlider.start.x;
   numberSlider.ball.y = numberSlider.start.y;
+  
   muter = new Component(115, 130, "Sound.png", 0, 0, "image");
 }
 
@@ -737,7 +755,7 @@ function mute() {
 }
 function sliders() {
   "use strict";
-  var distanceBetweenNumberBarSlots, distanceBetweenDiceBarSlots;
+  var distanceBetweenNumberBarSlots, distanceBetweenDiceBarSlots, i;
   diceSlider.icon.x = 25 + diceSlider.icon.width / 2 + camera.x - canvasWidth / 2;
   numberSlider.icon.x = -25 - diceSlider.icon.width / 2 + camera.x + canvasWidth / 2;
   diceSlider.start.x = diceSlider.icon.x + diceSlider.icon.width / 2 + 10 + diceSlider.start.width / 2;
@@ -748,20 +766,26 @@ function sliders() {
   diceSlider.fill.width = diceSlider.end.x - diceSlider.fill.x;
   numberSlider.fill.x = numberSlider.start.x - numberSlider.start.width / 2;
   numberSlider.fill.width = numberSlider.end.x + numberSlider.end.width / 2 - numberSlider.fill.x;
-  
-  if (timer6 === 30) {
-    diceSlider.icon.sourceX = diceSlider.icon.sourceX + 62;
-    timer6 = 0;
-    if (diceSlider.icon.sourceX >= 310) {
-      diceSlider.icon.sourceX = 0;
-    }
-  }
   distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
   if (getDiceGroupAtCurrentPage() !== undefined) {
     if (getDiceGroupAtCurrentPage() === D00) {
       distanceBetweenNumberBarSlots = numberSlider.fill.height * 2 / (getDiceGroupAtCurrentPage().maxDice - 2);
     } else {
       distanceBetweenNumberBarSlots = numberSlider.fill.height / (getDiceGroupAtCurrentPage().maxDice - 1);
+    }
+  }
+  for (i = 0; i < 7; i += 1) {
+    diceSlider.slots[i].x = i * distanceBetweenDiceBarSlots + diceSlider.start.x;
+  }
+  for (i = 0; i < D4.maxDice; i += 1) {
+    numberSlider.slots[i].x = numberSlider.icon.x;
+  }
+  
+  if (timer6 === 30) {
+    diceSlider.icon.sourceX = diceSlider.icon.sourceX + 62;
+    timer6 = 0;
+    if (diceSlider.icon.sourceX >= 310) {
+      diceSlider.icon.sourceX = 0;
     }
   }
   if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false && 
@@ -798,10 +822,10 @@ function sliders() {
         numDown();
       }
     } else if (getDiceGroupAtCurrentPage() !== undefined) {
-      while (getDiceGroupAtCurrentPage().numberOfDice < (Math.round(numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots * -1) + 1) {
+      while (getDiceGroupAtCurrentPage().numberOfDice < (Math.round((numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots) * -1) + 1) {
         numUp();
       }
-      while (getDiceGroupAtCurrentPage().numberOfDice > (Math.round(numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots * -1) + 1) {
+      while (getDiceGroupAtCurrentPage().numberOfDice > (Math.round((numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots) * -1) + 1) {
         numDown();
       }
     }

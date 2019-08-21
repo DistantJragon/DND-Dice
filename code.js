@@ -778,7 +778,20 @@ function sliders() {
     diceSlider.slots[i].x = i * distanceBetweenDiceBarSlots + diceSlider.start.x;
   }
   for (i = 0; i < D4.maxDice; i += 1) {
-    numberSlider.slots[i].x = numberSlider.icon.x;
+    numberSlider.slots[i].x = numberSlider.icon.x
+  }
+  if (getDiceGroupAtCurrentPage() === D00) {
+    for (i = 0; i < getDiceGroupAtCurrentPage().maxDice / 2; i += 1) {
+      numberSlider.slots[i].y = i * distanceBetweenNumberBarSlots + numberSlider.start.y;
+    }
+    while (i < D4.maxDice) {
+      numberSlider.slots[i].y = 0 - canvasHeight;
+      i += 1;
+    }
+  } else if (getDiceGroupAtCurrentPage() !== undefined) {
+    for (i = 0; i < getDiceGroupAtCurrentPage().maxDice; i += 1) {
+      numberSlider.slots[i].y = i * distanceBetweenNumberBarSlots + numberSlider.start.y;
+    }
   }
   
   if (timer6 === 30) {
@@ -834,11 +847,7 @@ function sliders() {
   } else if (getDiceGroupAtCurrentPage() !== undefined) {
     numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice - 1) * distanceBetweenNumberBarSlots * -1 + numberSlider.end.y;
   }
-  if (mouseRelease) {
-    diceSlideCheck = false;
-    numSlideCheck = false;
-  }
-  if (getDiceGroupAtCurrentPage() === undefined) {
+  if (getDiceGroupAtCurrentPage() === undefined || mouseRelease) {
     numSlideCheck = false;
   }
 }
@@ -912,8 +921,9 @@ function cameraPos() {
       camera.x = canvasWidth * 6.5;
     }
   }
-  if (mouseRelease) {
+  if (mouseRelease && diceSlideCheck) {
     camera.x = (Math.round((diceSlider.ball.x - diceSlider.start.x) / distanceBetweenDiceBarSlots) + 0.5) * canvasWidth;
+    diceSlideCheck = false;
 
   }
   camera.mouseX = cursor.x + camera.x - startCam.x;
@@ -972,44 +982,6 @@ function listenForControls() {
     keysReleased[e.keyCode] = true;
   });
 }
-function readCanvas() {
-  "use strict";
-  myGameArea.canvas.width = 10;
-  myGameArea.canvas.height = 10;
-  myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio - 5;
-  myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio - 5;
-  canvasWidth = myGameArea.canvas.width;
-  canvasHeight = myGameArea.canvas.height;
-  camera.x = canvasWidth / 2;
-  camera.y = canvasHeight / 2;
-  startCam.x = canvasWidth / 2;
-  startCam.y = canvasHeight / 2;
-}
-function updateCanvasSize() {
-  "use strict";
-  if (previousWidth !== window.innerWidth * window.devicePixelRatio - 5 ||
-      previousHeight !== window.innerHeight * window.devicePixelRatio - 5) {
-    readCanvas();
-    D4.changeDestinations(0);
-    D6.changeDestinations(0);
-    D8.changeDestinations(0);
-    D10.changeDestinations(0);
-    D00.changeDestinations(0);
-    D12.changeDestinations(0);
-    D20.changeDestinations(0);
-    D4Text1.x = canvasWidth * 0.5 - 15;
-    D4Text2.x = canvasWidth * 7.5 - 15;
-    D6Text1.x = canvasWidth * 1.5 - 15;
-    D8Text1.x = canvasWidth * 2.5 - 15;
-    D10Text1.x = canvasWidth * 3.5 - 30;
-    D00Text1.x = canvasWidth * 4.5 - 82;
-    D12Text1.x = canvasWidth * 5.5 - 30;
-    D20Text1.x = canvasWidth * 6.5 - 30;
-    D20Text2.x = canvasWidth * -0.5 - 30;
-  }
-  previousWidth = window.innerWidth * window.devicePixelRatio - 5;
-  previousHeight = window.innerHeight * window.devicePixelRatio - 5;
-}
 function updateText() {
   "use strict";
   var i;
@@ -1057,7 +1029,6 @@ function resetMouseClick() {
 function updateGameArea() {
   "use strict";
   myGameArea.clear();
-  updateCanvasSize();
   cameraPos();
   control();
   timers();
@@ -1076,7 +1047,16 @@ var myGameArea = {
   start : function () {
     "use strict";
     this.hasStarted = false;
-    readCanvas();
+    myGameArea.canvas.width = 10;
+    myGameArea.canvas.height = 10;
+    myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio - 5;
+    myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio - 5;
+    canvasWidth = myGameArea.canvas.width;
+    canvasHeight = myGameArea.canvas.height;
+    camera.x = canvasWidth / 2;
+    camera.y = canvasHeight / 2;
+    startCam.x = canvasWidth / 2;
+    startCam.y = canvasHeight / 2;
     allSprites();
     createText();
     errorSound = new Sound("errorSound.mp3");

@@ -77,6 +77,7 @@ function DiceType(pageNumber) {
   this.maxDice = this.maxColumns * this.maxRows;
   this.tempRow = 1;
   this.tempColumn = 1;
+  if (this.pageNumber <= 3) {this.sides = 2 * (this.pageNumber + 2)} else if (this.pageNumber === 4) {this.sides = 10} else if (this.pageNumber === 5) {this.sides = 12} else if (this.pageNumber === 6) {this.sides = 20}
   this.getDiceInRow = function (rowNumber) {
     var i, diceListInThisRow = [];
     for (i = 1; i < this.maxDice + 1; i += 1) {
@@ -593,34 +594,12 @@ function numDown() {
 function roll() {
   "use strict";
   var i;
-  // Rolls dice when camera is on them
-  if (camera.x === canvasWidth * 0.5) {
-    for (i = 1; i < D4.numberOfDice + 1; i += 1) {
-      D4[i].sourceX = randomNumber(1, 4) * D4[i].width;
+  if (getDiceGroupAtCurrentPage() !== undefined) {
+    for (i = 1; i < getDiceGroupAtCurrentPage().numberOfDice + 1; i += 1) {
+      getDiceGroupAtCurrentPage()[i].sourceX = randomNumber(1, getDiceGroupAtCurrentPage().sides) * getDiceGroupAtCurrentPage()[i].width;
     }
-  } else if (camera.x === canvasWidth * 1.5) {
-    for (i = 1; i < D6.numberOfDice + 1; i += 1) {
-      D6[i].sourceX = randomNumber(1, 6) * D6[i].width;
-    }
-  } else if (camera.x === canvasWidth * 2.5) {
-    for (i = 1; i < D8.numberOfDice + 1; i += 1) {
-      D8[i].sourceX = randomNumber(1, 8) * D8[i].width;
-    }
-  } else if (camera.x === canvasWidth * 3.5) {
-    for (i = 1; i < D10.numberOfDice + 1; i += 1) {
-      D10[i].sourceX = randomNumber(1, 10) * D10[i].width;
-    }
-  } else if (camera.x === canvasWidth * 4.5) {
-    for (i = 1; i < D00.numberOfDice + 1; i += 1) {
-      D00[i].sourceX = randomNumber(1, 10) * D00[i].width;
-    }
-  } else if (camera.x === canvasWidth * 5.5) {
-    for (i = 1; i < D12.numberOfDice + 1; i += 1) {
-      D12[i].sourceX = randomNumber(1, 12) * D12[i].width;
-    }
-  } else if (camera.x === canvasWidth * 6.5) {
-    for (i = 1; i < D20.numberOfDice + 1; i += 1) {
-      D20[i].sourceX = randomNumber(1, 20) * D20[i].width;
+    for (i = getDiceGroupAtCurrentPage().numberOfDice + 1; i < getDiceGroupAtCurrentPage().maxDice + 1; i += 1) {
+      getDiceGroupAtCurrentPage()[i].sourceX = 0;
     }
   }
   swipeCheck = false;

@@ -3,8 +3,6 @@ var textList = [];
 var diceList = [];
 var canvasWidth;
 var canvasHeight;
-var previousWidth;
-var previousHeight;
 var camera = {x: 0, y: 0, mouseX: 0, mouseY: 0};
 var startCam = {x: 0, y: 0};
 var diceWidth = 250;
@@ -77,6 +75,7 @@ function DiceType(pageNumber) {
   this.maxDice = this.maxColumns * this.maxRows;
   this.tempRow = 1;
   this.tempColumn = 1;
+  if (this.pageNumber <= 3) {this.sides = 2 * (this.pageNumber + 2); } else if (this.pageNumber === 4) {this.sides = 10; } else if (this.pageNumber === 5) {this.sides = 12; } else if (this.pageNumber === 6) {this.sides = 20; }
   this.getDiceInRow = function (rowNumber) {
     var i, diceListInThisRow = [];
     for (i = 1; i < this.maxDice + 1; i += 1) {
@@ -418,7 +417,7 @@ function allSprites() {
   numberSlider.fill.height = numberSlider.end.y - numberSlider.fill.y;
   
   distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
-  distanceBetweenNumberBarSlots = numberSlider.fill.height / (getDiceGroupAtCurrentPage().maxDice - 1);
+  distanceBetweenNumberBarSlots = numberSlider.fill.height / (D4.maxDice - 1);
   
   diceSlider.slots = {};
   for (i = 0; i < 7; i += 1) {
@@ -523,8 +522,8 @@ function mouseIsOver(sprite) {
   if ((camera.mouseX >= sprite.x - sprite.width / 2 &&
       camera.mouseY >= sprite.y - sprite.height / 2 &&
       camera.mouseX <= sprite.x + sprite.width / 2 &&
-      camera.mouseY <= sprite.y + sprite.height / 2) || 
-     (camera.mouseX >= sprite.x &&
+      camera.mouseY <= sprite.y + sprite.height / 2) ||
+      (camera.mouseX >= sprite.x &&
       camera.mouseY >= sprite.y &&
       camera.mouseX <= sprite.x + sprite.width &&
       camera.mouseY <= sprite.y + sprite.height &&
@@ -593,34 +592,12 @@ function numDown() {
 function roll() {
   "use strict";
   var i;
-  // Rolls dice when camera is on them
-  if (camera.x === canvasWidth * 0.5) {
-    for (i = 1; i < D4.numberOfDice + 1; i += 1) {
-      D4[i].sourceX = randomNumber(1, 4) * D4[i].width;
+  if (getDiceGroupAtCurrentPage() !== undefined) {
+    for (i = 1; i < getDiceGroupAtCurrentPage().numberOfDice + 1; i += 1) {
+      getDiceGroupAtCurrentPage()[i].sourceX = randomNumber(1, getDiceGroupAtCurrentPage().sides) * getDiceGroupAtCurrentPage()[i].width;
     }
-  } else if (camera.x === canvasWidth * 1.5) {
-    for (i = 1; i < D6.numberOfDice + 1; i += 1) {
-      D6[i].sourceX = randomNumber(1, 6) * D6[i].width;
-    }
-  } else if (camera.x === canvasWidth * 2.5) {
-    for (i = 1; i < D8.numberOfDice + 1; i += 1) {
-      D8[i].sourceX = randomNumber(1, 8) * D8[i].width;
-    }
-  } else if (camera.x === canvasWidth * 3.5) {
-    for (i = 1; i < D10.numberOfDice + 1; i += 1) {
-      D10[i].sourceX = randomNumber(1, 10) * D10[i].width;
-    }
-  } else if (camera.x === canvasWidth * 4.5) {
-    for (i = 1; i < D00.numberOfDice + 1; i += 1) {
-      D00[i].sourceX = randomNumber(1, 10) * D00[i].width;
-    }
-  } else if (camera.x === canvasWidth * 5.5) {
-    for (i = 1; i < D12.numberOfDice + 1; i += 1) {
-      D12[i].sourceX = randomNumber(1, 12) * D12[i].width;
-    }
-  } else if (camera.x === canvasWidth * 6.5) {
-    for (i = 1; i < D20.numberOfDice + 1; i += 1) {
-      D20[i].sourceX = randomNumber(1, 20) * D20[i].width;
+    for (i = getDiceGroupAtCurrentPage().numberOfDice + 1; i < getDiceGroupAtCurrentPage().maxDice + 1; i += 1) {
+      getDiceGroupAtCurrentPage()[i].sourceX = 0;
     }
   }
   swipeCheck = false;
@@ -664,10 +641,10 @@ function control() {
     toggle3 = true;  // For rolling 
   }
   // Prepare to determine a swipe or tap
-  if (mousePressed && 
-      mouseIsOver(muter) === false && 
-      mouseIsOver(diceSlider.fill) === false && mouseIsOver(diceSlider.start) === false && mouseIsOver(diceSlider.end) === false && 
-      mousePressOver(numberSlider.fill) == false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false) {
+  if (mousePressed &&
+      mouseIsOver(muter) === false &&
+      mouseIsOver(diceSlider.fill) === false && mouseIsOver(diceSlider.start) === false && mouseIsOver(diceSlider.end) === false &&
+      mousePressOver(numberSlider.fill) === false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false) {
     previousCursorX = cursor.x;
     previousCursorY = cursor.y;
     swipeCheck = true;
@@ -778,14 +755,14 @@ function sliders() {
     diceSlider.slots[i].x = i * distanceBetweenDiceBarSlots + diceSlider.start.x;
   }
   for (i = 0; i < D4.maxDice; i += 1) {
-    numberSlider.slots[i].x = numberSlider.icon.x
+    numberSlider.slots[i].x = numberSlider.icon.x;
   }
   if (getDiceGroupAtCurrentPage() === D00) {
     for (i = 0; i < getDiceGroupAtCurrentPage().maxDice / 2; i += 1) {
       numberSlider.slots[i].y = i * distanceBetweenNumberBarSlots + numberSlider.start.y;
     }
     while (i < D4.maxDice) {
-      numberSlider.slots[i].y = 0 - canvasHeight;
+      numberSlider.slots[i].y =  -canvasHeight;
       i += 1;
     }
   } else if (getDiceGroupAtCurrentPage() !== undefined) {
@@ -801,9 +778,9 @@ function sliders() {
       diceSlider.icon.sourceX = 0;
     }
   }
-  if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false && 
-      mousePressOver(numberSlider.fill) == false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false &&
-     swipeCheck === false) {
+  if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false &&
+      mousePressOver(numberSlider.fill) === false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false &&
+      swipeCheck === false) {
     diceSlideCheck = true;
   }
   if (diceSlideCheck) {
@@ -817,9 +794,9 @@ function sliders() {
     diceSlider.ball.x = diceSlider.end.x;
   }
   numberSlider.ball.x = numberSlider.start.x;
-  if ((mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end)) && swipeCheck === false && 
-      mousePressOver(diceSlider.fill) == false && mousePressOver(diceSlider.start) === false && mousePressOver(diceSlider.end) === false &&
-     swipeCheck === false) {
+  if ((mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end)) && swipeCheck === false &&
+      mousePressOver(diceSlider.fill) === false && mousePressOver(diceSlider.start) === false && mousePressOver(diceSlider.end) === false &&
+      swipeCheck === false) {
     numSlideCheck = true;
   }
   if (numSlideCheck && getDiceGroupAtCurrentPage() !== undefined) {

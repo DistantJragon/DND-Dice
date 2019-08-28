@@ -75,7 +75,15 @@ function DiceType(pageNumber) {
   this.maxDice = this.maxColumns * this.maxRows;
   this.tempRow = 1;
   this.tempColumn = 1;
-  if (this.pageNumber <= 3) {this.sides = 2 * (this.pageNumber + 2); } else if (this.pageNumber === 4) {this.sides = 10; } else if (this.pageNumber === 5) {this.sides = 12; } else if (this.pageNumber === 6) {this.sides = 20; }
+  if (this.pageNumber <= 3) {
+    this.sides = 2 * (this.pageNumber + 2);
+  } else if (this.pageNumber === 4) {
+    this.sides = 10;
+  } else if (this.pageNumber === 5) {
+    this.sides = 12;
+  } else if (this.pageNumber === 6) {
+    this.sides = 20;
+  }
   this.getDiceInRow = function (rowNumber) {
     var i, diceListInThisRow = [];
     for (i = 1; i < this.maxDice + 1; i += 1) {
@@ -510,10 +518,10 @@ var errorSound;
 
 function getDiceGroupAtCurrentPage() {
   "use strict";
-  var diceGroups = [D4, D6, D8, D10, D00, D12, D20], i;
-  for (i = 0; i < diceGroups.length; i += 1) {
-    if (diceGroups[i].pageNumber === camera.x / canvasWidth - 0.5) {
-      return diceGroups[i];
+  var i;
+  for (i = 0; i < diceList.length; i += 1) {
+    if (diceList[i].pageNumber === camera.x / canvasWidth - 0.5) {
+      return diceList[i];
     }
   }
 }
@@ -567,26 +575,40 @@ function goLeft() {
 }
 function numUp() {
   "use strict";
-  if (camera.x === canvasWidth * 0.5 && D4.numberOfDice < D4.maxDice) { D4.numberOfDice += 1; D4.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 1.5 && D6.numberOfDice < D6.maxDice) { D6.numberOfDice += 1; D6.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 2.5 && D8.numberOfDice < D8.maxDice) { D8.numberOfDice += 1; D8.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 3.5 && D10.numberOfDice < D10.maxDice) { D10.numberOfDice += 1; D10.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 4.5 && D00.numberOfDice < D00.maxDice) { D00.numberOfDice += 2; D00.changeDestinations(+2);
-    } else if (camera.x === canvasWidth * 5.5 && D12.numberOfDice < D12.maxDice) { D12.numberOfDice += 1; D12.changeDestinations(+1);
-    } else if (camera.x === canvasWidth * 6.5 && D20.numberOfDice < D20.maxDice) { D20.numberOfDice += 1; D20.changeDestinations(+1);
-    } else if (muteAll === -1) { errorSound.play(); }
+  if (getDiceGroupAtCurrentPage() === D00) {
+    if (getDiceGroupAtCurrentPage().numberOfDice < getDiceGroupAtCurrentPage().maxDice) {
+      getDiceGroupAtCurrentPage().numberOfDice += 2;
+      getDiceGroupAtCurrentPage().changeDestinations(+2);
+    } else if (muteAll === -1) {
+      errorSound.play();
+    }
+  } else if (getDiceGroupAtCurrentPage() !== undefined) {
+    if (getDiceGroupAtCurrentPage().numberOfDice < getDiceGroupAtCurrentPage().maxDice) {
+      getDiceGroupAtCurrentPage().numberOfDice += 1;
+      getDiceGroupAtCurrentPage().changeDestinations(+1);
+    } else if (muteAll === -1) {
+      errorSound.play();
+    }
+  }
   swipeCheck = false;
 }
 function numDown() {
   "use strict";
-  if (camera.x === canvasWidth * 0.5 && D4.numberOfDice > 1) { D4.numberOfDice -= 1; D4.changeDestinations(-1);
-    } else if (camera.x === canvasWidth * 1.5 && D6.numberOfDice > 1) { D6.numberOfDice -= 1; D6.changeDestinations(-1);
-    } else if (camera.x === canvasWidth * 2.5 && D8.numberOfDice > 1) { D8.numberOfDice -= 1; D8.changeDestinations(-1);
-    } else if (camera.x === canvasWidth * 3.5 && D10.numberOfDice > 1) { D10.numberOfDice -= 1; D10.changeDestinations(-1);
-    } else if (camera.x === canvasWidth * 4.5 && D00.numberOfDice > 2) { D00.numberOfDice -= 2; D00.changeDestinations(-2);
-    } else if (camera.x === canvasWidth * 5.5 && D12.numberOfDice > 1) { D12.numberOfDice -= 1; D12.changeDestinations(-1);
-    } else if (camera.x === canvasWidth * 6.5 && D20.numberOfDice > 1) { D20.numberOfDice -= 1; D20.changeDestinations(-1);
-    } else if (muteAll === -1) { errorSound.play(); }
+  if (getDiceGroupAtCurrentPage() === D00) {
+    if (getDiceGroupAtCurrentPage().numberOfDice > 2) {
+      getDiceGroupAtCurrentPage().numberOfDice -= 2;
+      getDiceGroupAtCurrentPage().changeDestinations(-2);
+    } else if (muteAll === -1) {
+      errorSound.play();
+    }
+  } else if (getDiceGroupAtCurrentPage() !== undefined) {
+    if (getDiceGroupAtCurrentPage().numberOfDice > 1) {
+      getDiceGroupAtCurrentPage().numberOfDice -= 1;
+      getDiceGroupAtCurrentPage().changeDestinations(-1);
+    } else if (muteAll === -1) {
+      errorSound.play();
+    }
+  }
   swipeCheck = false;
 }
 function roll() {
@@ -612,7 +634,7 @@ function control() {
   if (timer1 >= 20 && keysHeld[39]) {
     timer3 = 20; // Stop rolling
     toggle4 = true;
-    if (camera.x === 2600) {
+    if (camera.x >= canvasWidth * 6.5) {
       warpingD4 = true;
     }
   }
@@ -624,7 +646,7 @@ function control() {
   if (timer2 >= 20 && keysHeld[37]) {
     timer3 = 20;  // Stop rolling
     toggle5 = true;
-    if (camera.x === 200) {
+    if (camera.x <= canvasWidth * 0.5) {
       warpingD20 = true;
     }
   }
@@ -779,7 +801,7 @@ function sliders() {
     }
   }
   if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false &&
-      mousePressOver(numberSlider.fill) === false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false &&
+      numSlideCheck === false &&
       swipeCheck === false) {
     diceSlideCheck = true;
   }
@@ -795,7 +817,7 @@ function sliders() {
   }
   numberSlider.ball.x = numberSlider.start.x;
   if ((mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end)) && swipeCheck === false &&
-      mousePressOver(diceSlider.fill) === false && mousePressOver(diceSlider.start) === false && mousePressOver(diceSlider.end) === false &&
+      diceSlideCheck === false &&
       swipeCheck === false) {
     numSlideCheck = true;
   }
@@ -903,12 +925,27 @@ function cameraPos() {
   if (mouseRelease && diceSlideCheck) {
     camera.x = (Math.round((diceSlider.ball.x - diceSlider.start.x) / distanceBetweenDiceBarSlots) + 0.5) * canvasWidth;
     diceSlideCheck = false;
-
+  }
+  if (toggle4 === false && toggle5 === false && diceSlideCheck === false) {
+    camera.x = (Math.round(camera.x / canvasWidth - 0.5) + 0.5) * canvasWidth;
   }
   camera.mouseX = cursor.x + camera.x - startCam.x;
   camera.mouseY = cursor.y + camera.y - startCam.y;
 }
 
+function canvasSize() {
+  "use strict";
+  myGameArea.canvas.width = 10;
+  myGameArea.canvas.height = 10;
+  myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio - 5;
+  myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio - 5;
+  canvasWidth = myGameArea.canvas.width;
+  canvasHeight = myGameArea.canvas.height;
+  camera.x = canvasWidth / 2;
+  camera.y = canvasHeight / 2;
+  startCam.x = canvasWidth / 2;
+  startCam.y = canvasHeight / 2;
+}
 function listenForControls() {
   "use strict";
   myGameArea.canvas.addEventListener('mousemove', function (e) {
@@ -1025,17 +1062,7 @@ var myGameArea = {
   canvas : document.createElement("canvas"),
   start : function () {
     "use strict";
-    this.hasStarted = false;
-    myGameArea.canvas.width = 10;
-    myGameArea.canvas.height = 10;
-    myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio - 5;
-    myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio - 5;
-    canvasWidth = myGameArea.canvas.width;
-    canvasHeight = myGameArea.canvas.height;
-    camera.x = canvasWidth / 2;
-    camera.y = canvasHeight / 2;
-    startCam.x = canvasWidth / 2;
-    startCam.y = canvasHeight / 2;
+    canvasSize();
     allSprites();
     createText();
     errorSound = new Sound("errorSound.mp3");
@@ -1044,7 +1071,6 @@ var myGameArea = {
     document.body.insertBefore(this.canvas, document.body.childNodes[0]);
     this.interval = setInterval(updateGameArea, 100 / 6);
     listenForControls();
-    this.hasStarted = true;
   },
   clear : function () {
     "use strict";

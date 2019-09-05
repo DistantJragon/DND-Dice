@@ -1,6 +1,6 @@
 var spriteList = [];
 var textList = [];
-var diceList = [];
+var diceList = {};
 var canvasWidth;
 var canvasHeight;
 var camera = {x: 0, y: 0, mouseX: 0, mouseY: 0};
@@ -68,11 +68,14 @@ function DiceType(pageNumber) {
   this.maxColumns = Math.floor((canvasWidth - 270) / diceWidth);
   this.numberOfRows = 1;
   this.numberOfColumns = 1;
+  this.maxDice = this.maxColumns * this.maxRows;
+  this.createdDice = this.maxDice;
   if (this.pageNumber === 4) {
     this.maxColumns = this.maxColumns - (this.maxColumns % 2);
+    this.maxDice = this.maxColumns * this.maxRows / 2;
+    this.createdDice = this.maxDice;
     this.numberOfColumns = 2;
   }
-  this.maxDice = this.maxColumns * this.maxRows;
   this.tempRow = 1;
   this.tempColumn = 1;
   if (this.pageNumber <= 3) {
@@ -85,8 +88,9 @@ function DiceType(pageNumber) {
     this.sides = 20;
   }
   this.getDiceInRow = function (rowNumber) {
-    var i, diceListInThisRow = [];
-    for (i = 1; i < this.maxDice + 1; i += 1) {
+    var i, diceListInThisRow = [], D00Multiplier = 1;
+    if (this === diceList.D00) { D00Multiplier = 2; }
+    for (i = 1; i < this.maxDice * D00Multiplier + 1; i += 1) {
       if (this[i].row === rowNumber) {
         diceListInThisRow.push(this[i]);
       }
@@ -94,8 +98,9 @@ function DiceType(pageNumber) {
     return diceListInThisRow;
   };
   this.getDiceInColumn = function (columnNumber) {
-    var i, diceListInThisColumn = [];
-    for (i = 1; i < this.maxDice + 1; i += 1) {
+    var i, diceListInThisColumn = [], D00Multiplier = 1;
+    if (this === diceList.D00) { D00Multiplier = 2; }
+    for (i = 1; i < this.maxDice * D00Multiplier + 1; i += 1) {
       if (this[i].column === columnNumber) {
         diceListInThisColumn.push(this[i]);
       }
@@ -104,19 +109,19 @@ function DiceType(pageNumber) {
   };
   if (this.pageNumber === 4) {
     this.createSprites = function (width, height) {
-      var i, tempRows = 1, tempColumns = 1, tempNumberOfRows = 1, tempNumberOfColumns = 2;
-      for (i = 2; i < this.maxDice + 1; i += 2) {
+      var i, tempRows = 1, tempColumns = 2, tempNumberOfRows = 1, tempNumberOfColumns = 2;
+      for (i = 2; i < this.maxDice * 2 + 2; i += 2) {
         this[i - 1] = new Component(width, height, "D00.png", canvasWidth, canvasHeight, "image");
         this[i] = new Component(width, height, "D10.png", canvasWidth, canvasHeight, "image");
       }
-      for (i = 2; i < this.maxDice + 2; i += 2) {
-        this[i - 1].awayX = (Math.floor((tempColumns) / 2) / (this.maxColumns / 2) + pageNumber) * canvasWidth;
-        this[i].awayX = (Math.floor((tempColumns + 1) / 2) / (this.maxColumns / 2) + pageNumber) * canvasWidth;
-        if (i === tempRows * (tempColumns + 1)) {
-          if (tempRows < this.maxRows && (tempRows < (tempColumns + 1) / 2 || tempColumns === this.maxColumns - 1)) {
+      for (i = 2; i < this.maxDice * 2 + 2; i += 2) {
+        this[i - 1].awayX = (Math.floor((tempColumns - 1) / 2) / (this.maxColumns / 2) + pageNumber) * canvasWidth;
+        this[i].awayX = (Math.floor((tempColumns) / 2) / (this.maxColumns / 2) + pageNumber) * canvasWidth;
+        if (i === tempRows * tempColumns) {
+          if (tempRows < this.maxRows && (tempRows < tempColumns / 2 || tempColumns === this.maxColumns)) {
             tempNumberOfRows += 1;
             tempRows += 1;
-            tempColumns = 1;
+            tempColumns = 2;
           } else if (tempColumns !== this.maxColumns) {
             tempNumberOfColumns += 2;
             tempRows = 1;
@@ -130,7 +135,7 @@ function DiceType(pageNumber) {
           }
         }
       }
-      for (i = 1; i < this.maxDice + 1; i += 1) {
+      for (i = 1; i < this.maxDice * 2 + 1; i += 1) {
         this[i].awayY = canvasHeight * 3 / 2;
         this[i].x = this[i].awayX;
         this[i].y = this[i].awayY;
@@ -149,12 +154,12 @@ function DiceType(pageNumber) {
       this[2].destinationY = canvasHeight / 2;
       this[2].row = 1;
       this[2].column = 2;
-      this.numberOfDice = 2;
+      this.numberOfDice = 1;
     };
     this.changeDestinations = function (amountOfChange) {
       var i;
-      if (amountOfChange === 2) {
-        if (this.numberOfDice === this.numberOfRows * this.numberOfColumns + 2) {
+      if (amountOfChange === 1) {
+        if (this.numberOfDice === this.numberOfRows * this.numberOfColumns / 2 + 1) {
           if (this.numberOfRows !== this.maxRows && (this.numberOfRows < this.numberOfColumns / 2 || this.numberOfColumns === this.maxColumns)) {
             this.numberOfRows += 1;
             this.tempRow = this.numberOfRows;
@@ -172,40 +177,40 @@ function DiceType(pageNumber) {
             this.tempColumn += 2;
           }
         }
-        for (i = 1; i < this.numberOfDice + 1; i += 1) {
-          this[this.numberOfDice - 1].row = this.tempRow;
-          this[this.numberOfDice - 1].column = this.tempColumn;
-          this[this.numberOfDice].row = this.tempRow;
-          this[this.numberOfDice].column = this.tempColumn + 1;
+        this[this.numberOfDice * 2 - 1].row = this.tempRow;
+        this[this.numberOfDice * 2 - 1].column = this.tempColumn;
+        this[this.numberOfDice * 2].row = this.tempRow;
+        this[this.numberOfDice * 2].column = this.tempColumn + 1;
+        for (i = 1; i < this.numberOfDice * 2 + 1; i += 1) {
           this[i].destinationX = ((this[i].column / (this.getDiceInRow(this[i].row).length + 1)) + this.pageNumber) * canvasWidth;
           this[i].destinationY = (this[i].row / (this.numberOfRows + 1)) * canvasHeight;
         }
       }
-      if (amountOfChange === 0) {
-        for (i = 1; i < this.numberOfDice + 1; i += 1) {
+      if (amountOfChange === 0 || amountOfChange === undefined) {
+        for (i = 1; i < this.numberOfDice * 2 + 1; i += 1) {
           this[i].destinationX = ((this[i].column / (this.getDiceInRow(this[i].row).length + 1)) + this.pageNumber) * canvasWidth;
           this[i].destinationY = (this[i].row / (this.numberOfRows + 1)) * canvasHeight;
         }
       }
-      if (amountOfChange === -2) {
-        if (this.getDiceInColumn(this[this.numberOfDice + 2].column).length === 1) {
+      if (amountOfChange === -1) {
+        if (this.getDiceInColumn(this[this.numberOfDice * 2 + 2].column).length === 1) {
           this.numberOfColumns -= 2;
         }
-        if (this.getDiceInRow(this[this.numberOfDice + 2].row).length === 2) {
+        if (this.getDiceInRow(this[this.numberOfDice * 2 + 2].row).length === 2) {
           this.numberOfRows -= 1;
         }
-        this.tempRow = this[this.numberOfDice].row;
-        this.tempColumn = this[this.numberOfDice - 1].column;
-        this[this.numberOfDice + 1].row = 0;
-        this[this.numberOfDice + 1].column = 0;
-        this[this.numberOfDice + 1].destinationX = this[this.numberOfDice + 1].awayX;
-        this[this.numberOfDice + 1].destinationY = this[this.numberOfDice + 1].awayY;
-        this[this.numberOfDice + 2].row = 0;
-        this[this.numberOfDice + 2].column = 0;
-        this[this.numberOfDice + 2].destinationX = this[this.numberOfDice + 2].awayX;
-        this[this.numberOfDice + 2].destinationY = this[this.numberOfDice + 2].awayY;
+        this.tempRow = this[this.numberOfDice * 2].row;
+        this.tempColumn = this[this.numberOfDice * 2 - 1].column;
+        this[this.numberOfDice * 2 + 1].row = 0;
+        this[this.numberOfDice * 2 + 1].column = 0;
+        this[this.numberOfDice * 2 + 1].destinationX = this[this.numberOfDice * 2 + 1].awayX;
+        this[this.numberOfDice * 2 + 1].destinationY = this[this.numberOfDice * 2 + 1].awayY;
+        this[this.numberOfDice * 2 + 2].row = 0;
+        this[this.numberOfDice * 2 + 2].column = 0;
+        this[this.numberOfDice * 2 + 2].destinationX = this[this.numberOfDice * 2 + 2].awayX;
+        this[this.numberOfDice * 2 + 2].destinationY = this[this.numberOfDice * 2 + 2].awayY;
 
-        for (i = 1; i < this.numberOfDice + 1; i += 1) {
+        for (i = 1; i < this.numberOfDice * 2 + 1; i += 1) {
           this[i].destinationX = ((this[i].column / (this.getDiceInRow(this[i].row).length + 1)) + this.pageNumber) * canvasWidth;
           this[i].destinationY = (this[i].row / (this.numberOfRows + 1)) * canvasHeight;
         }
@@ -216,17 +221,18 @@ function DiceType(pageNumber) {
       var i, tempX, tempY, tempRows = 1, tempColumns = 1, tempNumberOfRows = 1, tempNumberOfColumns = 1;
       for (i = 1; i < this.maxDice + 1; i += 1) {
         this[i] = new Component(width, height, url, canvasWidth, canvasHeight, "image");
-        tempX = tempColumns / (this.maxColumns + 1);
-        if (tempX >= 1 / 2) {
-          this[i].awayX = canvasWidth * (3 / 2 + this.pageNumber);
-        } else {
-          this[i].awayX = canvasWidth * (-1 / 2 + this.pageNumber);
-        }
-        tempY = tempRows / (this.maxRows + 1);
+        tempX = tempColumns / tempNumberOfColumns;
+        tempY = tempRows / tempNumberOfRows;
         if (tempY >= 1 / 2) {
           this[i].awayY = canvasHeight * 3 / 2;
         } else {
           this[i].awayY = canvasHeight * -1 / 2;
+        }
+        if (tempX >= 1 / 2) {
+          this[i].awayX = canvasWidth * (3 / 2 + this.pageNumber);
+        } else {
+          this[i].awayX = canvasWidth * (-1 / 2 + this.pageNumber);
+          this[i].awayY = canvasHeight * 3 / 2;
         }
         this[i].x = this[i].awayX;
         this[i].y = this[i].awayY;
@@ -314,7 +320,9 @@ function DiceType(pageNumber) {
     };
   }
   this.moveToIntendedPositions = function () {
-    for (i = 1; i < this.maxDice + 1; i += 1) {
+    var i, D00Multiplier = 1;
+    if (this === diceList.D00) { D00Multiplier = 2; }
+    for (i = 1; i < this.maxDice * D00Multiplier + 1; i += 1) {
       this[i].velocityX = (this[i].destinationX - this[i].x) / 10;
       if (Math.abs(this[i].x - this[i].destinationX) < 1) {
         this[i].x = this[i].destinationX;
@@ -326,15 +334,15 @@ function DiceType(pageNumber) {
     }
   };
   this.reachedDestination = function () {
-    var i;
-    for (i = 1; i < this.maxDice + 1; i += 1) {
+    var i, D00Multiplier = 1;
+    if (this === diceList.D00) { D00Multiplier = 2; }
+    for (i = 1; i < this.createdDice * D00Multiplier + 1; i += 1) {
       if (this[i].x !== this[i].destinationX || this[i].y !== this[i].destinationY) {
         return false;
       }
     }
     return true;
   };
-  diceList.push(this);
 }
 function Sound(src) {
   "use strict";
@@ -353,7 +361,6 @@ function Sound(src) {
 }
 
 // Spites
-var D4, D6, D8, D10, D00, D12, D20;
 var diceSlider = {
   icon : undefined,
   start: undefined,
@@ -375,21 +382,21 @@ var muter;
 function allSprites() {
   "use strict";
   var i, distanceBetweenDiceBarSlots, distanceBetweenNumberBarSlots;
-  D4 = new DiceType(0);
-  D6 = new DiceType(1);
-  D8 = new DiceType(2);
-  D10 = new DiceType(3);
-  D00 = new DiceType(4);
-  D12 = new DiceType(5);
-  D20 = new DiceType(6);
+  diceList.D4 = new DiceType(0);
+  diceList.D6 = new DiceType(1);
+  diceList.D8 = new DiceType(2);
+  diceList.D10 = new DiceType(3);
+  diceList.D00 = new DiceType(4);
+  diceList.D12 = new DiceType(5);
+  diceList.D20 = new DiceType(6);
   
-  D4.createSprites(diceWidth, diceWidth / 2 * Math.sqrt(3), "D4.png");
-  D6.createSprites(diceWidth, diceWidth, "D6.png");
-  D8.createSprites(diceWidth, diceWidth, "D8.png");
-  D10.createSprites(diceWidth, diceWidth, "D10.png");
-  D00.createSprites(diceWidth, diceWidth);
-  D12.createSprites(diceWidth, diceWidth, "D12.png");
-  D20.createSprites(diceWidth, diceWidth / 2 * Math.sqrt(3), "D20.png");
+  diceList.D4.createSprites(diceWidth, diceWidth / 2 * Math.sqrt(3), "D4.png");
+  diceList.D6.createSprites(diceWidth, diceWidth, "D6.png");
+  diceList.D8.createSprites(diceWidth, diceWidth, "D8.png");
+  diceList.D10.createSprites(diceWidth, diceWidth, "D10.png");
+  diceList.D00.createSprites(diceWidth, diceWidth);
+  diceList.D12.createSprites(diceWidth, diceWidth, "D12.png");
+  diceList.D20.createSprites(diceWidth, diceWidth / 2 * Math.sqrt(3), "D20.png");
   diceSlider.start = new Component(62, 62, "Slider.png", 425, 625, "image");
   diceSlider.end = new Component(62, 62, "Slider.png", 22, 375, "image");
   diceSlider.fill = new Component(62, 62, "#bfbfbf", 22, 375);
@@ -425,7 +432,7 @@ function allSprites() {
   numberSlider.fill.height = numberSlider.end.y - numberSlider.fill.y;
   
   distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
-  distanceBetweenNumberBarSlots = numberSlider.fill.height / (D4.maxDice - 1);
+  distanceBetweenNumberBarSlots = numberSlider.fill.height / (diceList.D4.maxDice - 1);
   
   diceSlider.slots = {};
   for (i = 0; i < 7; i += 1) {
@@ -434,7 +441,7 @@ function allSprites() {
     diceSlider.slots[i].y = diceSlider.icon.y;
   }
   numberSlider.slots = {};
-  for (i = 0; i < D4.maxDice; i += 1) {
+  for (i = 0; i < diceList.D4.maxDice; i += 1) {
     numberSlider.slots[i] = new Component(12, 12, "Slot.png", 0, 0, "image");
     numberSlider.slots[i].x = numberSlider.icon.x;
     numberSlider.slots[i].y = i * distanceBetweenNumberBarSlots + numberSlider.start.y;
@@ -518,10 +525,12 @@ var errorSound;
 
 function getDiceGroupAtCurrentPage() {
   "use strict";
-  var i;
-  for (i = 0; i < diceList.length; i += 1) {
-    if (diceList[i].pageNumber === camera.x / canvasWidth - 0.5) {
-      return diceList[i];
+  var i, dice;
+  for (dice in diceList) {
+    if (diceList.hasOwnProperty(dice)) {
+      if (diceList[dice].pageNumber === camera.x / canvasWidth - 0.5) {
+        return diceList[dice];
+      }
     }
   }
 }
@@ -575,14 +584,7 @@ function goLeft() {
 }
 function numUp() {
   "use strict";
-  if (getDiceGroupAtCurrentPage() === D00) {
-    if (getDiceGroupAtCurrentPage().numberOfDice < getDiceGroupAtCurrentPage().maxDice) {
-      getDiceGroupAtCurrentPage().numberOfDice += 2;
-      getDiceGroupAtCurrentPage().changeDestinations(+2);
-    } else if (muteAll === -1) {
-      errorSound.play();
-    }
-  } else if (getDiceGroupAtCurrentPage() !== undefined) {
+  if (getDiceGroupAtCurrentPage() !== undefined) {
     if (getDiceGroupAtCurrentPage().numberOfDice < getDiceGroupAtCurrentPage().maxDice) {
       getDiceGroupAtCurrentPage().numberOfDice += 1;
       getDiceGroupAtCurrentPage().changeDestinations(+1);
@@ -594,14 +596,7 @@ function numUp() {
 }
 function numDown() {
   "use strict";
-  if (getDiceGroupAtCurrentPage() === D00) {
-    if (getDiceGroupAtCurrentPage().numberOfDice > 2) {
-      getDiceGroupAtCurrentPage().numberOfDice -= 2;
-      getDiceGroupAtCurrentPage().changeDestinations(-2);
-    } else if (muteAll === -1) {
-      errorSound.play();
-    }
-  } else if (getDiceGroupAtCurrentPage() !== undefined) {
+  if (getDiceGroupAtCurrentPage() !== undefined) {
     if (getDiceGroupAtCurrentPage().numberOfDice > 1) {
       getDiceGroupAtCurrentPage().numberOfDice -= 1;
       getDiceGroupAtCurrentPage().changeDestinations(-1);
@@ -613,12 +608,13 @@ function numDown() {
 }
 function roll() {
   "use strict";
-  var i;
+  var i, D00Multiplier = 1;
+  if (getDiceGroupAtCurrentPage() === diceList.D00) { D00Multiplier = 2; }
   if (getDiceGroupAtCurrentPage() !== undefined) {
-    for (i = 1; i < getDiceGroupAtCurrentPage().numberOfDice + 1; i += 1) {
+    for (i = 1; i < getDiceGroupAtCurrentPage().numberOfDice * D00Multiplier + 1; i += 1) {
       getDiceGroupAtCurrentPage()[i].sourceX = randomNumber(1, getDiceGroupAtCurrentPage().sides) * getDiceGroupAtCurrentPage()[i].width;
     }
-    for (i = getDiceGroupAtCurrentPage().numberOfDice + 1; i < getDiceGroupAtCurrentPage().maxDice + 1; i += 1) {
+    for (i = getDiceGroupAtCurrentPage().numberOfDice * D00Multiplier + 1; i < getDiceGroupAtCurrentPage().maxDice + 1; i += 1) {
       getDiceGroupAtCurrentPage()[i].sourceX = 0;
     }
   }
@@ -632,7 +628,6 @@ function control() {
   }
   // Hold R
   if (timer1 >= 20 && keysHeld[39]) {
-    timer3 = 20; // Stop rolling
     toggle4 = true;
     if (camera.x >= canvasWidth * 6.5) {
       warpingD4 = true;
@@ -644,7 +639,6 @@ function control() {
   }
   // Hold L
   if (timer2 >= 20 && keysHeld[37]) {
-    timer3 = 20;  // Stop rolling
     toggle5 = true;
     if (camera.x <= canvasWidth * 0.5) {
       warpingD20 = true;
@@ -767,29 +761,21 @@ function sliders() {
   numberSlider.fill.width = numberSlider.end.x + numberSlider.end.width / 2 - numberSlider.fill.x;
   distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
   if (getDiceGroupAtCurrentPage() !== undefined) {
-    if (getDiceGroupAtCurrentPage() === D00) {
-      distanceBetweenNumberBarSlots = numberSlider.fill.height * 2 / (getDiceGroupAtCurrentPage().maxDice - 2);
-    } else {
-      distanceBetweenNumberBarSlots = numberSlider.fill.height / (getDiceGroupAtCurrentPage().maxDice - 1);
-    }
+    distanceBetweenNumberBarSlots = numberSlider.fill.height / (getDiceGroupAtCurrentPage().maxDice - 1);
   }
   for (i = 0; i < 7; i += 1) {
     diceSlider.slots[i].x = i * distanceBetweenDiceBarSlots + diceSlider.start.x;
   }
-  for (i = 0; i < D4.maxDice; i += 1) {
+  for (i = 0; i < diceList.D4.maxDice; i += 1) {
     numberSlider.slots[i].x = numberSlider.icon.x;
   }
-  if (getDiceGroupAtCurrentPage() === D00) {
-    for (i = 0; i < getDiceGroupAtCurrentPage().maxDice / 2; i += 1) {
-      numberSlider.slots[i].y = i * distanceBetweenNumberBarSlots + numberSlider.start.y;
-    }
-    while (i < D4.maxDice) {
-      numberSlider.slots[i].y =  -canvasHeight;
-      i += 1;
-    }
-  } else if (getDiceGroupAtCurrentPage() !== undefined) {
+  if (getDiceGroupAtCurrentPage() !== undefined) {
     for (i = 0; i < getDiceGroupAtCurrentPage().maxDice; i += 1) {
       numberSlider.slots[i].y = i * distanceBetweenNumberBarSlots + numberSlider.start.y;
+    }
+    while (i < diceList.D4.maxDice) {
+      numberSlider.slots[i].y = canvasHeight * 2;
+      i += 1;
     }
   }
   
@@ -804,6 +790,10 @@ function sliders() {
       numSlideCheck === false &&
       swipeCheck === false) {
     diceSlideCheck = true;
+    toggle4 = false;
+    timer4 = 0;
+    toggle5 = false;
+    timer5 = 0;
   }
   if (diceSlideCheck) {
     diceSlider.ball.x = camera.mouseX;
@@ -828,14 +818,7 @@ function sliders() {
     } else if (numberSlider.ball.y > numberSlider.end.y) {
       numberSlider.ball.y = numberSlider.end.y;
     }
-    if (getDiceGroupAtCurrentPage() === D00) {
-      while (getDiceGroupAtCurrentPage().numberOfDice < (Math.round((numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots * -1) + 1) * 2) {
-        numUp();
-      }
-      while (getDiceGroupAtCurrentPage().numberOfDice > (Math.round((numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots * -1) + 1) * 2) {
-        numDown();
-      }
-    } else if (getDiceGroupAtCurrentPage() !== undefined) {
+    if (getDiceGroupAtCurrentPage() !== undefined) {
       while (getDiceGroupAtCurrentPage().numberOfDice < (Math.round((numberSlider.ball.y - numberSlider.end.y) / distanceBetweenNumberBarSlots) * -1) + 1) {
         numUp();
       }
@@ -843,8 +826,6 @@ function sliders() {
         numDown();
       }
     }
-  } else if (getDiceGroupAtCurrentPage() === D00) {
-    numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice / 2 - 1) * distanceBetweenNumberBarSlots * -1 + numberSlider.end.y;
   } else if (getDiceGroupAtCurrentPage() !== undefined) {
     numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice - 1) * distanceBetweenNumberBarSlots * -1 + numberSlider.end.y;
   }
@@ -854,47 +835,39 @@ function sliders() {
 }
 function spriteAnimation() {
   "use strict";
-  var i;
-  if (warpingD4 === false && D4.reachedDestination() === false) {
-    D4.moveToIntendedPositions();
+  var i, dice;
+  if (warpingD4 === false && diceList.D4.reachedDestination() === false) {
+    diceList.D4.moveToIntendedPositions();
   }
-  if (D6.reachedDestination() === false) {
-    D6.moveToIntendedPositions();
+  for (dice in diceList) {
+    if (diceList[dice] !== diceList.D4 && diceList[dice] !== diceList.D20) {
+      if (diceList[dice].reachedDestination() === false) {
+        diceList[dice].moveToIntendedPositions();
+      }
+    }
   }
-  if (D8.reachedDestination() === false) {
-    D8.moveToIntendedPositions();
-  }
-  if (D10.reachedDestination() === false) {
-    D10.moveToIntendedPositions();
-  }
-  if (D00.reachedDestination() === false) {
-    D00.moveToIntendedPositions();
-  }
-  if (D12.reachedDestination() === false) {
-    D12.moveToIntendedPositions();
-  }
-  if (warpingD20 === false && D20.reachedDestination() === false) {
-    D20.moveToIntendedPositions();
+  if (warpingD20 === false && diceList.D20.reachedDestination() === false) {
+    diceList.D20.moveToIntendedPositions();
   }
   if (warpingD4) {
-    for (i = 1; i < D4.maxDice + 1; i += 1) {
-      D4[i].x = D4[i].destinationX + canvasWidth * 7;
+    for (i = 1; i < diceList.D4.maxDice + 1; i += 1) {
+      diceList.D4[i].x = diceList.D4[i].destinationX + canvasWidth * 7;
     }
     if ((toggle4 === false && camera.x === canvasWidth * 0.5) || (toggle5 && camera.x === canvasWidth * 6.5)) {
       warpingD4 = false;
-      for (i = 1; i < D4.maxDice + 1; i += 1) {
-        D4[i].x = D4[i].destinationX;
+      for (i = 1; i < diceList.D4.maxDice + 1; i += 1) {
+        diceList.D4[i].x = diceList.D4[i].destinationX;
       }
     }
   }
   if (warpingD20) {
-    for (i = 1; i < D20.maxDice + 1; i += 1) {
-      D20[i].x = D20[i].destinationX - canvasWidth * 7;
+    for (i = 1; i < diceList.D20.maxDice + 1; i += 1) {
+      diceList.D20[i].x = diceList.D20[i].destinationX - canvasWidth * 7;
     }
     if ((toggle5 === false && camera.x === canvasWidth * 6.5) || (toggle4 && camera.x === canvasWidth * 0.5)) {
       warpingD20 = false;
-      for (i = 1; i < D20.maxDice + 1; i += 1) {
-        D20[i].x = D20[i].destinationX;
+      for (i = 1; i < diceList.D20.maxDice + 1; i += 1) {
+        diceList.D20[i].x = diceList.D20[i].destinationX;
       }
     }
   }
@@ -908,10 +881,10 @@ function cameraPos() {
   if (toggle5) { // Move left
     camera.x = camera.x - canvasWidth / 20;
   }
-  if (camera.x === canvasWidth / -2) {
+  if (camera.x <= canvasWidth / -2) {
     camera.x = canvasWidth * 6.5;
   }
-  if (camera.x === canvasWidth * 7.5) {
+  if (camera.x >= canvasWidth * 7.5) {
     camera.x = canvasWidth / 2;
   }
   if (diceSlideCheck) {
@@ -941,10 +914,6 @@ function canvasSize() {
   myGameArea.canvas.height = window.innerHeight * window.devicePixelRatio - 5;
   canvasWidth = myGameArea.canvas.width;
   canvasHeight = myGameArea.canvas.height;
-  camera.x = canvasWidth / 2;
-  camera.y = canvasHeight / 2;
-  startCam.x = canvasWidth / 2;
-  startCam.y = canvasHeight / 2;
 }
 function listenForControls() {
   "use strict";
@@ -1063,6 +1032,10 @@ var myGameArea = {
   start : function () {
     "use strict";
     canvasSize();
+    camera.x = canvasWidth / 2;
+    camera.y = canvasHeight / 2;
+    startCam.x = canvasWidth / 2;
+    startCam.y = canvasHeight / 2;
     allSprites();
     createText();
     errorSound = new Sound("errorSound.mp3");

@@ -100,7 +100,6 @@ function DiceType(pageNumber) {
     var i, diceListInThisColumn = [], D00Multiplier = 1;
     if (this === diceList.D00) { D00Multiplier = 2; }
     for (i = 1; i < this.maxDice * D00Multiplier + 1; i += 1) {
-      console.log(this.pageNumber, D00Multiplier, i)
       if (this[i].column === columnNumber) {
         diceListInThisColumn.push(this[i]);
       }
@@ -220,7 +219,7 @@ function DiceType(pageNumber) {
       this[2].destinationY = canvasHeight / 2;
       this[2].row = 1;
       this[2].column = 2;
-    }
+    };
   } else {
     this.createSprites = function (width, height, url) {
       var i, tempX, tempY, tempRows = 1, tempColumns = 1, tempNumberOfRows = 1, tempNumberOfColumns = 1;
@@ -339,7 +338,7 @@ function DiceType(pageNumber) {
       this[1].destinationY = canvasHeight / 2;
       this[1].row = 1;
       this[1].column = 1;
-    }
+    };
   }
   this.moveToIntendedPositions = function () {
     var i, D00Multiplier = 1;
@@ -359,7 +358,7 @@ function DiceType(pageNumber) {
   };
   this.reachedDestination = function () {
     var i, D00Multiplier = 1;
-    if (this === diceList.D00) { D00Multiplier = 2; } else { D00Multiplier = 1 }
+    if (this === diceList.D00) { D00Multiplier = 2; } else { D00Multiplier = 1; }
     for (i = 1; i < this.createdDice * D00Multiplier + 1; i += 1) {
       if (this[i].x !== this[i].destinationX || this[i].y !== this[i].destinationY) {
         return false;
@@ -404,6 +403,7 @@ var numberSlider = {
 var muter;
 
 function sliderXPositions() {
+  "use strict";
   diceSlider.icon.x = 25 + diceSlider.icon.width / 2 + camera.x - canvasWidth / 2;
   numberSlider.icon.x = -25 - diceSlider.icon.width / 2 + camera.x + canvasWidth / 2;
   
@@ -420,6 +420,8 @@ function sliderXPositions() {
   numberSlider.fill.width = numberSlider.end.x + numberSlider.end.width / 2 - numberSlider.fill.x;
 }
 function sliderYPositions() {
+  "use strict";
+  diceSlider.icon.y = canvasHeight - 25 - diceSlider.icon.height / 2;
   diceSlider.icon.y = canvasHeight - 25 - diceSlider.icon.height / 2;
   numberSlider.icon.y = canvasHeight - 25 - numberSlider.icon.height / 2;
   
@@ -504,6 +506,7 @@ var D20Text1;
 var D20Text2;
 
 function textXs() {
+  "use strict";
   D4Text1.x = canvasWidth * 0.5 - 15;
   D4Text2.x = canvasWidth * 7.5 - 15;
   D6Text1.x = canvasWidth * 1.5 - 15;

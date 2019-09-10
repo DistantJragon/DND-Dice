@@ -1,4 +1,10 @@
-var spriteList = [];
+var spriteList = {
+  dice: [],
+  sliders: [],
+  slots: [],
+  sliderBalls: [],
+  muter: []
+};
 var textList = [];
 var diceList = {};
 var canvasWidth;
@@ -13,12 +19,10 @@ function Component(width, height, color, x, y, type) {
   if (type === "image") {
     this.image = new Image();
     this.image.src = "./media/" + color;
-    spriteList.push(this);
   } else if (type === "text") {
     textList.push(this);
   } else {
     this.rectangle = true;
-    spriteList.push(this);
   }
   this.width = width;
   this.height = height;
@@ -64,7 +68,7 @@ function DiceType(pageNumber) {
   var i;
   this.numberOfDice = 1;
   this.pageNumber = pageNumber;
-  this.maxRows = Math.floor((canvasHeight - 100) / diceWidth);
+  this.maxRows = Math.floor((canvasHeight - 300) / diceWidth);
   this.maxColumns = Math.floor((canvasWidth - 270) / diceWidth);
   this.numberOfRows = 1;
   this.numberOfColumns = 1;
@@ -112,6 +116,7 @@ function DiceType(pageNumber) {
       for (i = this.createdDice + 2; i < this.maxDice * 2 + 2; i += 2) {
         this[i - 1] = new Component(width, height, "D00.png", canvasWidth, canvasHeight, "image");
         this[i] = new Component(width, height, "D10.png", canvasWidth, canvasHeight, "image");
+        spriteList.dice.push(this[i - 1], this[i]);
       }
       for (i = 2; i < this.maxDice * 2 + 2; i += 2) {
         this[i - 1].awayX = (Math.floor((tempColumns - 1) / 2) / (this.maxColumns / 2) + pageNumber) * canvasWidth;
@@ -225,6 +230,7 @@ function DiceType(pageNumber) {
       var i, tempX, tempY, tempRows = 1, tempColumns = 1, tempNumberOfRows = 1, tempNumberOfColumns = 1;
       for (i = this.createdDice + 1; i < this.maxDice + 1; i += 1) {
         this[i] = new Component(width, height, url, canvasWidth, canvasHeight, "image");
+        spriteList.dice.push(this[i]);
       }
       for (i = 1; i < this.maxDice + 1; i += 1) {
         tempX = tempColumns / tempNumberOfColumns;
@@ -464,6 +470,7 @@ function allSprites() {
   numberSlider.end = new Component(62, 62, "Slider.png", 22, 375, "image");
   numberSlider.fill = new Component(62, 62, "#bfbfbf", 22, 375);
   numberSlider.icon = new Component(62, 62, "Number Sign.png", 425, 625, "image");
+  spriteList.sliders.push(diceSlider.start, diceSlider.end, diceSlider.fill, diceSlider.icon, numberSlider.start, numberSlider.end, numberSlider.fill, numberSlider.icon);
   
   sliderXPositions();
   sliderYPositions();
@@ -474,12 +481,14 @@ function allSprites() {
   diceSlider.slots = {};
   for (i = 0; i < 7; i += 1) {
     diceSlider.slots[i] = new Component(12, 12, "Slot.png", 0, 0, "image");
+    spriteList.slots.push(diceSlider.slots[i]);
     diceSlider.slots[i].x = i * distanceBetweenDiceBarSlots + diceSlider.start.x;
     diceSlider.slots[i].y = diceSlider.icon.y;
   }
   numberSlider.slots = {};
   for (i = 0; i < diceList.D4.maxDice; i += 1) {
     numberSlider.slots[i] = new Component(12, 12, "Slot.png", 0, 0, "image");
+    spriteList.slots.push(numberSlider.slots[i]);
     numberSlider.slots[i].x = numberSlider.icon.x;
     numberSlider.slots[i].y = i * distanceBetweenNumberBarSlots + numberSlider.start.y;
   }
@@ -490,8 +499,10 @@ function allSprites() {
   numberSlider.ball = new Component(37, 37, "Ball.png", 22, 375, "image");
   numberSlider.ball.x = numberSlider.start.x;
   numberSlider.ball.y = numberSlider.start.y;
+  spriteList.sliderBalls.push(diceSlider.ball, numberSlider.ball);
   
   muter = new Component(115, 130, "Sound.png", 0, 0, "image");
+  spriteList.muter.push(muter);
 }
 
 // Text
@@ -1019,10 +1030,14 @@ function updateText() {
 }
 function drawSprites() {
   "use strict";
-  var i;
-  for (i = 0; i < spriteList.length; i += 1) {
-    spriteList[i].vroom();
-    spriteList[i].update();
+  var i, spriteType;
+  for (spriteType in spriteList) {
+    if (spriteList.hasOwnProperty(spriteType)) {
+      for (i = 0; i < spriteList[spriteType].length; i += 1) {
+        spriteList[spriteType][i].vroom();
+        spriteList[spriteType][i].update();
+      }
+    }
   }
 }
 function resetPressedKeys() {

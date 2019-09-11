@@ -93,7 +93,7 @@ function DiceType(pageNumber) {
   this.getDiceInRow = function (rowNumber) {
     var i, diceListInThisRow = [], D00Multiplier = 1;
     if (this === diceList.D00) { D00Multiplier = 2; }
-    for (i = 1; i < this.maxDice * D00Multiplier + 1; i += 1) {
+    for (i = 1; i < this.createdDice * D00Multiplier + 1; i += 1) {
       if (this[i].row === rowNumber) {
         diceListInThisRow.push(this[i]);
       }
@@ -103,7 +103,7 @@ function DiceType(pageNumber) {
   this.getDiceInColumn = function (columnNumber) {
     var i, diceListInThisColumn = [], D00Multiplier = 1;
     if (this === diceList.D00) { D00Multiplier = 2; }
-    for (i = 1; i < this.maxDice * D00Multiplier + 1; i += 1) {
+    for (i = 1; i < this.createdDice * D00Multiplier + 1; i += 1) {
       if (this[i].column === columnNumber) {
         diceListInThisColumn.push(this[i]);
       }

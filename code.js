@@ -551,10 +551,6 @@ function createText() {
 }
 
 // Other
-var previousCursorX;
-var previousCursorY;
-var cursorVelocityX;
-var cursorVelocityY;
 var toggle1 = false;
 var toggle2 = false;
 var toggle3 = false;
@@ -575,12 +571,17 @@ var muteAll = -1;
 
 // Misc.
 var cursor = {x: 0, y: 0};
+var previousCursorX;
+var previousCursorY;
+var cursorVelocityX;
+var cursorVelocityY;
 var keysPressed = [];
 var keysHeld = [];
 var keysReleased = [];
 var mousePressed = false;
 var mousePress = false;
 var mouseRelease = false;
+var accelerometer = {x: 0, y: 0, z: 0};
 var errorSound;
 
 function getDiceGroupAtCurrentPage() {
@@ -968,55 +969,70 @@ function canvasSize() {
 }
 function listenForControls() {
   "use strict";
-  myGameArea.canvas.addEventListener('mousemove', function (e) {
-    cursor.x = (e.pageX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
-    cursor.y = (e.pageY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
+  myGameArea.canvas.addEventListener('mousemove', function () {
+    cursor.x = (event.pageX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
+    cursor.y = (event.pageY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
   });
-  myGameArea.canvas.addEventListener('mousedown', function (e) {
+  myGameArea.canvas.addEventListener('mousedown', function () {
     mousePress = true;
     mousePressed = true;
   });
-  myGameArea.canvas.addEventListener('mouseup', function (e) {
+  myGameArea.canvas.addEventListener('mouseup', function () {
     mousePress = false;
     mouseRelease = true;
   });
-  myGameArea.canvas.addEventListener('mouseleave', function (e) {
+  myGameArea.canvas.addEventListener('mouseleave', function () {
     mousePress = false;
     mouseRelease = true;
   });
-  myGameArea.canvas.addEventListener('touchstart', function (e) {
-    cursor.x = (e.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
-    cursor.y = (e.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
+  myGameArea.canvas.addEventListener('touchstart', function () {
+    cursor.x = (event.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
+    cursor.y = (event.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
     mousePress = true;
     mousePressed = true;
-    e.preventDefault();
+    event.preventDefault();
   });
-  myGameArea.canvas.addEventListener('touchmove', function (e) {
-    cursor.x = (e.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
-    cursor.y = (e.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
-    e.preventDefault();
+  myGameArea.canvas.addEventListener('touchmove', function () {
+    cursor.x = (event.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
+    cursor.y = (event.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
+    event.preventDefault();
   });
-  myGameArea.canvas.addEventListener('touchend', function (e) {
+  myGameArea.canvas.addEventListener('touchend', function () {
     mousePress = false;
     mouseRelease = true;
-    e.preventDefault();
+    event.preventDefault();
   });
-  myGameArea.canvas.addEventListener('touchcancel', function (e) {
+  myGameArea.canvas.addEventListener('touchcancel', function () {
     mousePressed = false;
     mousePress = false;
     mouseRelease = true;
   });
-  window.addEventListener('keydown', function (e) {
-    keysHeld[e.keyCode] = true;
-    if (keysPressed[e.keyCode] !== 2) {
-      keysPressed[e.keyCode] = 1;
+  window.addEventListener('keydown', function () {
+    keysHeld[event.keyCode] = true;
+    if (keysPressed[event.keyCode] !== 2) {
+      keysPressed[event.keyCode] = 1;
     }
   });
-  window.addEventListener('keyup', function (e) {
-    keysHeld[e.keyCode] = false;
-    keysPressed[e.keyCode] = 0;
-    keysReleased[e.keyCode] = true;
+  window.addEventListener('keyup', function () {
+    keysHeld[event.keyCode] = false;
+    keysPressed[event.keyCode] = 0;
+    keysReleased[event.keyCode] = true;
   });
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener("deviceorientation", function () {
+      accelerometer.x = event.beta;
+      accelerometer.y = event.gemma;
+      accelerometer.z = event.alpha;
+      console.log(accelerometer)
+    }, true);
+  } else {
+    window.addEventListener('devicemotion', function () {
+      accelerometer.x = event.acceleration.x * 2;
+      accelerometer.y = event.acceleration.y * 2;
+      accelerometer.z = event.acceleration.z * 2;
+      console.log(accelerometer)
+    }, true);
+  }
 }
 function updateText() {
   "use strict";

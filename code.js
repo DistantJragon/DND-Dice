@@ -13,7 +13,10 @@ var camera = {x: 0, y: 0,
               startX: 0, startY: 0,
               mouseX: 0, mouseY: 0};
 var diceWidth = 250;
-
+function randomNumber(min, max) {
+  "use strict";
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 function Component(width, height, color, x, y, type) {
   "use strict";
   this.type = type;
@@ -349,7 +352,6 @@ function DiceType(pageNumber) {
   this.rollTimer = 0;
   this.rollToggle = false;
   this.roll = function () {
-    "use strict";
     var i, D00Multiplier = 1;
     if (this === diceList.D00) { D00Multiplier = 2; } else { D00Multiplier = 1; }
     for (i = 1; i < this.numberOfDice * D00Multiplier + 1; i += 1) {
@@ -359,7 +361,7 @@ function DiceType(pageNumber) {
       this[i].sourceX = 0;
     }
     this.rollTimer += 1;
-  }
+  };
   this.moveToIntendedPositions = function () {
     var i, D00Multiplier = 1;
     if (this === diceList.D00) { D00Multiplier = 2; }
@@ -564,9 +566,9 @@ var timer5 = 0;
 var timer6 = 0;
 var warpingD4 = false;
 var warpingD20 = false;
-var swipeCheck = false;
+var swipeCheck = 0; // 0 = off, 1 = delaying, 2 = on
 var diceSlideCheck = false;
-var numSlideCheck = false;
+var numberSlideCheck = false;
 var muteAll = -1;
 
 // Misc.
@@ -618,15 +620,11 @@ function mousePressOver(sprite) {
     return false;
   }
 }
-function randomNumber(min, max) {
-  "use strict";
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 function goRight() {
   "use strict";
   toggle1 = true;
   toggle4 = true;
-  swipeCheck = false;
+  swipeCheck = 0;
   if (camera.x === canvasWidth * 6.5) {
     warpingD4 = true;
   }
@@ -635,7 +633,7 @@ function goLeft() {
   "use strict";
   toggle2 = true;
   toggle5 = true;
-  swipeCheck = false;
+  swipeCheck = 0;
   if (camera.x === canvasWidth * 0.5) {
     warpingD20 = true;
   }
@@ -650,7 +648,7 @@ function numUp() {
       errorSound.play();
     }
   }
-  swipeCheck = false;
+  swipeCheck = 0;
 }
 function numDown() {
   "use strict";
@@ -662,7 +660,7 @@ function numDown() {
       errorSound.play();
     }
   }
-  swipeCheck = false;
+  swipeCheck = 0;
 }
 function control() {
   "use strict";
@@ -702,15 +700,18 @@ function control() {
       getDiceGroupAtCurrentPage().rollToggle = true;
     }
   }
+  if (swipeCheck === 1) {
+    swipeCheck = 2;
+  }
   // Prepare to determine a swipe or tap
   if (cursor.pressed &&
       mouseIsOver(muter) === false &&
       mouseIsOver(diceSlider.fill) === false && mouseIsOver(diceSlider.start) === false && mouseIsOver(diceSlider.end) === false &&
       mousePressOver(numberSlider.fill) === false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false) {
-    swipeCheck = true;
+    swipeCheck = 1;
   }
   // Determine between swipe or tap(s)
-  if (swipeCheck) {
+  if (swipeCheck === 2) {
     if (cursor.velocityX >= 80) {
       goLeft();
     } else if (cursor.velocityX <= -80) {
@@ -722,7 +723,7 @@ function control() {
     } else if (cursor.released) {
       if (getDiceGroupAtCurrentPage() !== undefined) {
         getDiceGroupAtCurrentPage().rollToggle = true;
-        swipeCheck = false;
+        swipeCheck = 0;
       }
     }
   }
@@ -830,9 +831,9 @@ function sliders() {
       diceSlider.icon.sourceX = 0;
     }
   }
-  if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false &&
-      numSlideCheck === false &&
-      swipeCheck === false) {
+  if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) &&
+      numberSlideCheck === false &&
+      swipeCheck === 0) {
     diceSlideCheck = true;
     toggle4 = false;
     timer4 = 0;
@@ -850,12 +851,12 @@ function sliders() {
     diceSlider.ball.x = diceSlider.end.x;
   }
   numberSlider.ball.x = numberSlider.start.x;
-  if ((mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end)) && swipeCheck === false &&
+  if ((mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end)) &&
       diceSlideCheck === false &&
-      swipeCheck === false) {
-    numSlideCheck = true;
+      swipeCheck === 0) {
+    numberSlideCheck = true;
   }
-  if (numSlideCheck && getDiceGroupAtCurrentPage() !== undefined) {
+  if (numberSlideCheck && getDiceGroupAtCurrentPage() !== undefined) {
     numberSlider.ball.y = camera.mouseY;
     if (numberSlider.ball.y < numberSlider.start.y) {
       numberSlider.ball.y = numberSlider.start.y;
@@ -874,7 +875,7 @@ function sliders() {
     numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice - 1) * distanceBetweenNumberBarSlots * -1 + numberSlider.end.y;
   }
   if (getDiceGroupAtCurrentPage() === undefined || cursor.released) {
-    numSlideCheck = false;
+    numberSlideCheck = false;
   }
 }
 function spriteAnimation() {
@@ -1015,14 +1016,12 @@ function listenForControls() {
       accelerometer.x = event.beta;
       accelerometer.y = event.gamma;
       accelerometer.z = event.alpha;
-      console.log(accelerometer);
     }, true);
   } else if (window.DeviceMotionEvent) {
     window.addEventListener('devicemotion', function () {
       accelerometer.x = event.acceleration.x * 2;
       accelerometer.y = event.acceleration.y * 2;
       accelerometer.z = event.acceleration.z * 2;
-      console.log(accelerometer);
     }, true);
   } else {
     accelerometer.enabled = 0;
@@ -1084,16 +1083,20 @@ function setAccelerometer() {
   "use strict";
   accelerometer.velocityX = accelerometer.x - accelerometer.previousX;
   accelerometer.velocityY = accelerometer.y - accelerometer.previousY;
+  accelerometer.velocityZ = accelerometer.z - accelerometer.previousZ;
 }
 function resetAccelerometer() {
+  "use strict";
   accelerometer.previousX = accelerometer.x;
   accelerometer.previousY = accelerometer.y;
+  accelerometer.previousZ = accelerometer.z;
 }
 
 function updateGameArea() {
   "use strict";
   myGameArea.clear();
   setMouse();
+  setAccelerometer();
   cameraPos();
   control();
   checkToRollDice();
@@ -1102,18 +1105,12 @@ function updateGameArea() {
   sliders();
   spriteAnimation();
   
-  if (keysHeld[80]) {
-    console.log(cursor.isPressed, cursor.pressed, cursor.released, "-",
-              cursor.previousX, cursor.previousY, "-",
-              cursor.velocityX, cursor.velocityY, "-",
-              cursor.x,cursor.y)
-  }
-  
   updateText();
   drawSprites();
   resetPressedKeys();
   resetReleasedKeys();
   resetMouse();
+  resetAccelerometer();
 }                                       // Draw Function
 var myGameArea = {
   canvas : document.createElement("canvas"),

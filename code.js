@@ -3,16 +3,20 @@ var spriteList = {
   sliders: [],
   slots: [],
   sliderBalls: [],
-  muter: []
+  options: []
 };
 var textList = [];
 var diceList = {};
 var canvasWidth;
 var canvasHeight;
-var camera = {x: 0, y: 0, mouseX: 0, mouseY: 0};
-var startCam = {x: 0, y: 0};
+var camera = {x: 0, y: 0,
+              startX: 0, startY: 0,
+              mouseX: 0, mouseY: 0};
 var diceWidth = 250;
-
+function randomNumber(min, max) {
+  "use strict";
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 function Component(width, height, color, x, y, type) {
   "use strict";
   this.type = type;
@@ -42,20 +46,20 @@ function Component(width, height, color, x, y, type) {
     if (this.type === "text") {
       ctx.font = this.width + " " + this.height;
       ctx.fillStyle = color;
-      ctx.fillText(this.text, this.x - camera.x + startCam.x, this.y - camera.y + startCam.y);
+      ctx.fillText(this.text, this.x - camera.x + camera.startX, this.y - camera.y + camera.startY);
     } else if (type === "image") {
       ctx.drawImage(this.image,
                     this.sourceX,
                     0,
                     this.width,
                     this.height,
-                    this.x - camera.x + startCam.x - (this.width / 2),
-                    this.y - camera.y + startCam.y - (this.height / 2),
+                    this.x - camera.x + camera.startX - (this.width / 2),
+                    this.y - camera.y + camera.startY - (this.height / 2),
                     this.width,
                     this.height);
     } else {
       ctx.fillStyle = color;
-      ctx.fillRect(this.x - camera.x + startCam.x, this.y - camera.y + startCam.y, this.width, this.height);
+      ctx.fillRect(this.x - camera.x + camera.startX, this.y - camera.y + camera.startY, this.width, this.height);
     }
   };
   this.vroom = function () {
@@ -65,10 +69,9 @@ function Component(width, height, color, x, y, type) {
 }
 function DiceType(pageNumber) {
   "use strict";
-  var i;
   this.numberOfDice = 1;
   this.pageNumber = pageNumber;
-  this.maxRows = Math.floor((canvasHeight - 300) / diceWidth);
+  this.maxRows = Math.floor((canvasHeight - 200) / diceWidth);
   this.maxColumns = Math.floor((canvasWidth - 270) / diceWidth);
   this.numberOfRows = 1;
   this.numberOfColumns = 1;
@@ -346,6 +349,19 @@ function DiceType(pageNumber) {
       this[1].column = 1;
     };
   }
+  this.rollTimer = 0;
+  this.rollToggle = false;
+  this.roll = function () {
+    var i, D00Multiplier = 1;
+    if (this === diceList.D00) { D00Multiplier = 2; } else { D00Multiplier = 1; }
+    for (i = 1; i < this.numberOfDice * D00Multiplier + 1; i += 1) {
+      this[i].sourceX = randomNumber(1, this.sides) * this[i].width;
+    }
+    for (i = this.numberOfDice * D00Multiplier + 1; i < this.maxDice + 1; i += 1) {
+      this[i].sourceX = 0;
+    }
+    this.rollTimer += 1;
+  };
   this.moveToIntendedPositions = function () {
     var i, D00Multiplier = 1;
     if (this === diceList.D00) { D00Multiplier = 2; }
@@ -502,7 +518,7 @@ function allSprites() {
   spriteList.sliderBalls.push(diceSlider.ball, numberSlider.ball);
   
   muter = new Component(115, 130, "Sound.png", 0, 0, "image");
-  spriteList.muter.push(muter);
+  spriteList.options.push(muter);
 }
 
 // Text
@@ -516,18 +532,6 @@ var D12Text1;
 var D20Text1;
 var D20Text2;
 
-function textXs() {
-  "use strict";
-  D4Text1.x = canvasWidth * 0.5 - 15;
-  D4Text2.x = canvasWidth * 7.5 - 15;
-  D6Text1.x = canvasWidth * 1.5 - 15;
-  D8Text1.x = canvasWidth * 2.5 - 15;
-  D10Text1.x = canvasWidth * 3.5 - 25;
-  D00Text1.x = canvasWidth * 4.5 - 82;
-  D12Text1.x = canvasWidth * 5.5 - 25;
-  D20Text1.x = canvasWidth * 6.5 - 25;
-  D20Text2.x = canvasWidth * -0.5 - 25;
-}
 function createText() {
   "use strict";
   D4Text1 = new Component("30px", "Consolas", "black", canvasWidth * 0.5 - 15, 30, "text");
@@ -551,41 +555,39 @@ function createText() {
 }
 
 // Other
-var previousCursorX;
-var previousCursorY;
-var cursorVelocityX;
-var cursorVelocityY;
 var toggle1 = false;
 var toggle2 = false;
-var toggle3 = false;
 var toggle4 = false;
 var toggle5 = false;
 var timer1 = 0;
 var timer2 = 0;
-var timer3 = 0;
 var timer4 = 0;
 var timer5 = 0;
 var timer6 = 0;
 var warpingD4 = false;
 var warpingD20 = false;
-var swipeCheck = false;
+var swipeCheck = 0; // 0 = off, 1 = delaying, 2 = on
 var diceSlideCheck = false;
-var numSlideCheck = false;
+var numberSlideCheck = false;
 var muteAll = -1;
 
 // Misc.
-var cursor = {x: 0, y: 0};
+var cursor = {x: 0, y: 0,
+              previousX: 0, previousY: 0,
+              velocityX: 0, velocityY: 0,
+              pressed: false, isPressed: false, released: false};
 var keysPressed = [];
 var keysHeld = [];
 var keysReleased = [];
-var mousePressed = false;
-var mousePress = false;
-var mouseRelease = false;
+var accelerometer = {x: 0, y: 0, z: 0,
+                     previousX: 0, previousY: 0, previousZ: 0,
+                     velocityX: 0, velocityY: 0, velocityZ: 0,
+                     enabled: 0};
 var errorSound;
 
 function getDiceGroupAtCurrentPage() {
   "use strict";
-  var i, dice;
+  var dice;
   for (dice in diceList) {
     if (diceList.hasOwnProperty(dice)) {
       if (diceList[dice].pageNumber === camera.x / canvasWidth - 0.5) {
@@ -612,22 +614,17 @@ function mouseIsOver(sprite) {
 }
 function mousePressOver(sprite) {
   "use strict";
-  if (mouseIsOver(sprite) && mousePress) {
+  if (mouseIsOver(sprite) && cursor.isPressed) {
     return true;
   } else {
     return false;
   }
 }
-function randomNumber(min, max) {
-  "use strict";
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 function goRight() {
   "use strict";
   toggle1 = true;
   toggle4 = true;
-  timer3 = 10;
-  swipeCheck = false;
+  swipeCheck = 0;
   if (camera.x === canvasWidth * 6.5) {
     warpingD4 = true;
   }
@@ -636,8 +633,7 @@ function goLeft() {
   "use strict";
   toggle2 = true;
   toggle5 = true;
-  timer3 = 10;
-  swipeCheck = false;
+  swipeCheck = 0;
   if (camera.x === canvasWidth * 0.5) {
     warpingD20 = true;
   }
@@ -652,7 +648,7 @@ function numUp() {
       errorSound.play();
     }
   }
-  swipeCheck = false;
+  swipeCheck = 0;
 }
 function numDown() {
   "use strict";
@@ -664,21 +660,7 @@ function numDown() {
       errorSound.play();
     }
   }
-  swipeCheck = false;
-}
-function roll() {
-  "use strict";
-  var i, D00Multiplier = 1;
-  if (getDiceGroupAtCurrentPage() === diceList.D00) { D00Multiplier = 2; }
-  if (getDiceGroupAtCurrentPage() !== undefined) {
-    for (i = 1; i < getDiceGroupAtCurrentPage().numberOfDice * D00Multiplier + 1; i += 1) {
-      getDiceGroupAtCurrentPage()[i].sourceX = randomNumber(1, getDiceGroupAtCurrentPage().sides) * getDiceGroupAtCurrentPage()[i].width;
-    }
-    for (i = getDiceGroupAtCurrentPage().numberOfDice * D00Multiplier + 1; i < getDiceGroupAtCurrentPage().maxDice + 1; i += 1) {
-      getDiceGroupAtCurrentPage()[i].sourceX = 0;
-    }
-  }
-  swipeCheck = false;
+  swipeCheck = 0;
 }
 function control() {
   "use strict";
@@ -713,42 +695,53 @@ function control() {
     numDown();
   }
   // Press Space
-  if (keysPressed[32] === 1) {
-    toggle3 = true;  // For rolling 
+  if (keysPressed[32] === 1) { // 32 = spacebar
+    if (getDiceGroupAtCurrentPage() !== undefined) {
+      getDiceGroupAtCurrentPage().rollToggle = true;
+    }
+  }
+  if (swipeCheck === 1) {
+    swipeCheck = 2;
   }
   // Prepare to determine a swipe or tap
-  if (mousePressed &&
+  if (cursor.pressed &&
       mouseIsOver(muter) === false &&
       mouseIsOver(diceSlider.fill) === false && mouseIsOver(diceSlider.start) === false && mouseIsOver(diceSlider.end) === false &&
       mousePressOver(numberSlider.fill) === false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false) {
-    previousCursorX = cursor.x;
-    previousCursorY = cursor.y;
-    swipeCheck = true;
+    swipeCheck = 1;
   }
   // Determine between swipe or tap(s)
-  if (swipeCheck) {
-    cursorVelocityX = cursor.x - previousCursorX;
-    cursorVelocityY = cursor.y - previousCursorY;
-    previousCursorX = cursor.x;
-    previousCursorY = cursor.y;
-    if (cursorVelocityX >= 80) {
+  if (swipeCheck === 2) {
+    if (cursor.velocityX >= 80) {
       goLeft();
-    } else if (cursorVelocityX <= -80) {
+    } else if (cursor.velocityX <= -80) {
       goRight();
-    } else if (cursorVelocityY <= -80) {
+    } else if (cursor.velocityY <= -80) {
       numUp();
-    } else if (cursorVelocityY >= 80) {
+    } else if (cursor.velocityY >= 80) {
       numDown();
-    } else if (mouseRelease) {
-      toggle3 = true;
+    } else if (cursor.released) {
+      if (getDiceGroupAtCurrentPage() !== undefined) {
+        getDiceGroupAtCurrentPage().rollToggle = true;
+        swipeCheck = 0;
+      }
     }
   }
-  if (toggle3) {
-    roll();
+}
+function checkToRollDice() {
+  "use strict";
+  var dice;
+  for (dice in diceList) {
+    if (diceList.hasOwnProperty(dice)) {
+      if (diceList[dice].rollToggle) {
+        diceList[dice].roll();
+      }
+    }
   }
 }
 function timers() {
   "use strict";
+  var dice;
   if (toggle1) { // For pressing right
     timer1 = timer1 + 1;
   }
@@ -770,13 +763,14 @@ function timers() {
     toggle2 = false;
     timer2 = 0;
   }
-
-  if (toggle3) { // For Rolling
-    timer3 = timer3 + 1;
-  }
-  if (timer3 > 7) {
-    timer3 = 0;
-    toggle3 = false;
+  
+  for (dice in diceList) {
+    if (diceList.hasOwnProperty(dice)) {
+      if (diceList[dice].rollTimer > 7) {
+        diceList[dice].rollToggle = false;
+        diceList[dice].rollTimer = 0;
+      }
+    }
   }
   
   if (toggle4) { // For moving camera right
@@ -797,9 +791,9 @@ function timers() {
   
   timer6 = timer6 + 1; // For Dice Bar Icon
 }
-function mute() {
+function options() {
   "use strict";
-  if (mouseIsOver(muter) && mousePressed) {
+  if (mouseIsOver(muter) && cursor.pressed) {
     muteAll = muteAll * -1;
   }
   muter.sourceX = (muteAll * -58) + 58;
@@ -837,9 +831,9 @@ function sliders() {
       diceSlider.icon.sourceX = 0;
     }
   }
-  if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) && swipeCheck === false &&
-      numSlideCheck === false &&
-      swipeCheck === false) {
+  if ((mousePressOver(diceSlider.fill) || mousePressOver(diceSlider.start) || mousePressOver(diceSlider.end)) &&
+      numberSlideCheck === false &&
+      swipeCheck === 0) {
     diceSlideCheck = true;
     toggle4 = false;
     timer4 = 0;
@@ -857,12 +851,12 @@ function sliders() {
     diceSlider.ball.x = diceSlider.end.x;
   }
   numberSlider.ball.x = numberSlider.start.x;
-  if ((mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end)) && swipeCheck === false &&
+  if ((mousePressOver(numberSlider.fill) || mousePressOver(numberSlider.start) || mousePressOver(numberSlider.end)) &&
       diceSlideCheck === false &&
-      swipeCheck === false) {
-    numSlideCheck = true;
+      swipeCheck === 0) {
+    numberSlideCheck = true;
   }
-  if (numSlideCheck && getDiceGroupAtCurrentPage() !== undefined) {
+  if (numberSlideCheck && getDiceGroupAtCurrentPage() !== undefined) {
     numberSlider.ball.y = camera.mouseY;
     if (numberSlider.ball.y < numberSlider.start.y) {
       numberSlider.ball.y = numberSlider.start.y;
@@ -880,8 +874,8 @@ function sliders() {
   } else if (getDiceGroupAtCurrentPage() !== undefined) {
     numberSlider.ball.y = (getDiceGroupAtCurrentPage().numberOfDice - 1) * distanceBetweenNumberBarSlots * -1 + numberSlider.end.y;
   }
-  if (getDiceGroupAtCurrentPage() === undefined || mouseRelease) {
-    numSlideCheck = false;
+  if (getDiceGroupAtCurrentPage() === undefined || cursor.released) {
+    numberSlideCheck = false;
   }
 }
 function spriteAnimation() {
@@ -946,15 +940,15 @@ function cameraPos() {
       camera.x = canvasWidth * 6.5;
     }
   }
-  if (mouseRelease && diceSlideCheck) {
+  if (cursor.released && diceSlideCheck) {
     camera.x = (Math.round((diceSlider.ball.x - diceSlider.start.x) / distanceBetweenDiceBarSlots) + 0.5) * canvasWidth;
     diceSlideCheck = false;
   }
   if (toggle4 === false && toggle5 === false && diceSlideCheck === false) {
     camera.x = (Math.round(camera.x / canvasWidth - 0.5) + 0.5) * canvasWidth;
   }
-  camera.mouseX = cursor.x + camera.x - startCam.x;
-  camera.mouseY = cursor.y + camera.y - startCam.y;
+  camera.mouseX = cursor.x + camera.x - camera.startX;
+  camera.mouseY = cursor.y + camera.y - camera.startY;
 }
 
 function canvasSize() {
@@ -968,55 +962,70 @@ function canvasSize() {
 }
 function listenForControls() {
   "use strict";
-  myGameArea.canvas.addEventListener('mousemove', function (e) {
-    cursor.x = (e.pageX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
-    cursor.y = (e.pageY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
+  myGameArea.canvas.addEventListener('mousemove', function () {
+    cursor.x = (event.pageX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
+    cursor.y = (event.pageY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
   });
-  myGameArea.canvas.addEventListener('mousedown', function (e) {
-    mousePress = true;
-    mousePressed = true;
+  myGameArea.canvas.addEventListener('mousedown', function () {
+    cursor.isPressed = true;
+    cursor.pressed = true;
   });
-  myGameArea.canvas.addEventListener('mouseup', function (e) {
-    mousePress = false;
-    mouseRelease = true;
+  myGameArea.canvas.addEventListener('mouseup', function () {
+    cursor.isPressed = false;
+    cursor.released = true;
   });
-  myGameArea.canvas.addEventListener('mouseleave', function (e) {
-    mousePress = false;
-    mouseRelease = true;
+  myGameArea.canvas.addEventListener('mouseleave', function () {
+    cursor.isPressed = false;
+    cursor.released = true;
   });
-  myGameArea.canvas.addEventListener('touchstart', function (e) {
-    cursor.x = (e.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
-    cursor.y = (e.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
-    mousePress = true;
-    mousePressed = true;
-    e.preventDefault();
+  myGameArea.canvas.addEventListener('touchstart', function () {
+    cursor.x = (event.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
+    cursor.y = (event.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
+    cursor.isPressed = true;
+    cursor.pressed = true;
+    event.preventDefault();
   });
-  myGameArea.canvas.addEventListener('touchmove', function (e) {
-    cursor.x = (e.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
-    cursor.y = (e.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
-    e.preventDefault();
+  myGameArea.canvas.addEventListener('touchmove', function () {
+    cursor.x = (event.touches[0].clientX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
+    cursor.y = (event.touches[0].clientY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
+    event.preventDefault();
   });
-  myGameArea.canvas.addEventListener('touchend', function (e) {
-    mousePress = false;
-    mouseRelease = true;
-    e.preventDefault();
+  myGameArea.canvas.addEventListener('touchend', function () {
+    cursor.isPressed = false;
+    cursor.released = true;
+    event.preventDefault();
   });
-  myGameArea.canvas.addEventListener('touchcancel', function (e) {
-    mousePressed = false;
-    mousePress = false;
-    mouseRelease = true;
+  myGameArea.canvas.addEventListener('touchcancel', function () {
+    cursor.pressed = false;
+    cursor.isPressed = false;
+    cursor.released = true;
   });
-  window.addEventListener('keydown', function (e) {
-    keysHeld[e.keyCode] = true;
-    if (keysPressed[e.keyCode] !== 2) {
-      keysPressed[e.keyCode] = 1;
+  window.addEventListener('keydown', function () {
+    keysHeld[event.keyCode] = true;
+    if (keysPressed[event.keyCode] !== 2) {
+      keysPressed[event.keyCode] = 1;
     }
   });
-  window.addEventListener('keyup', function (e) {
-    keysHeld[e.keyCode] = false;
-    keysPressed[e.keyCode] = 0;
-    keysReleased[e.keyCode] = true;
+  window.addEventListener('keyup', function () {
+    keysHeld[event.keyCode] = false;
+    keysPressed[event.keyCode] = 0;
+    keysReleased[event.keyCode] = true;
   });
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener("deviceorientation", function () {
+      accelerometer.x = event.beta;
+      accelerometer.y = event.gamma;
+      accelerometer.z = event.alpha;
+    }, true);
+  } else if (window.DeviceMotionEvent) {
+    window.addEventListener('devicemotion', function () {
+      accelerometer.x = event.acceleration.x * 2;
+      accelerometer.y = event.acceleration.y * 2;
+      accelerometer.z = event.acceleration.z * 2;
+    }, true);
+  } else {
+    accelerometer.enabled = 0;
+  }
 }
 function updateText() {
   "use strict";
@@ -1058,19 +1067,41 @@ function resetReleasedKeys() {
     }
   }
 }
-function resetMouseClick() {
+function setMouse() {
   "use strict";
-  mousePressed = false;
-  mouseRelease = false;
+  cursor.velocityX = cursor.x - cursor.previousX;
+  cursor.velocityY = cursor.y - cursor.previousY;
+}
+function resetMouse() {
+  "use strict";
+  cursor.pressed = false;
+  cursor.released = false;
+  cursor.previousX = cursor.x;
+  cursor.previousY = cursor.y;
+}
+function setAccelerometer() {
+  "use strict";
+  accelerometer.velocityX = accelerometer.x - accelerometer.previousX;
+  accelerometer.velocityY = accelerometer.y - accelerometer.previousY;
+  accelerometer.velocityZ = accelerometer.z - accelerometer.previousZ;
+}
+function resetAccelerometer() {
+  "use strict";
+  accelerometer.previousX = accelerometer.x;
+  accelerometer.previousY = accelerometer.y;
+  accelerometer.previousZ = accelerometer.z;
 }
 
 function updateGameArea() {
   "use strict";
   myGameArea.clear();
+  setMouse();
+  setAccelerometer();
   cameraPos();
   control();
+  checkToRollDice();
   timers();
-  mute();
+  options();
   sliders();
   spriteAnimation();
   
@@ -1078,7 +1109,8 @@ function updateGameArea() {
   drawSprites();
   resetPressedKeys();
   resetReleasedKeys();
-  resetMouseClick();
+  resetMouse();
+  resetAccelerometer();
 }                                       // Draw Function
 var myGameArea = {
   canvas : document.createElement("canvas"),
@@ -1087,8 +1119,8 @@ var myGameArea = {
     canvasSize();
     camera.x = canvasWidth / 2;
     camera.y = canvasHeight / 2;
-    startCam.x = canvasWidth / 2;
-    startCam.y = canvasHeight / 2;
+    camera.startX = canvasWidth / 2;
+    camera.startY = canvasHeight / 2;
     allSprites();
     createText();
     errorSound = new Sound("errorSound.mp3");

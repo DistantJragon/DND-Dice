@@ -11,7 +11,9 @@ var canvasWidth;
 var canvasHeight;
 var camera = {x: 0, y: 0,
               startX: 0, startY: 0,
-              mouseX: 0, mouseY: 0};
+              mouseX: 0, mouseY: 0,
+              rightToggle: false, leftToggle: false,
+              rightTimer: 0, leftTimer: 0};
 var diceWidth = 250;
 function randomNumber(min, max) {
   "use strict";
@@ -86,12 +88,8 @@ function DiceType(pageNumber) {
   this.tempColumn = 1;
   if (this.pageNumber <= 3) {
     this.sides = 2 * (this.pageNumber + 2);
-  } else if (this.pageNumber === 4) {
-    this.sides = 10;
-  } else if (this.pageNumber === 5) {
-    this.sides = 12;
-  } else if (this.pageNumber === 6) {
-    this.sides = 20;
+  } else if (this.pageNumber >= 4) {
+    this.sides = 3 * this.pageNumber * this.pageNumber - 25 * this.pageNumber + 62;
   }
   this.getDiceInRow = function (rowNumber) {
     var i, diceListInThisRow = [], D00Multiplier = 1;
@@ -555,15 +553,11 @@ function createText() {
 }
 
 // Other
-var toggle1 = false;
-var toggle2 = false;
-var toggle4 = false;
-var toggle5 = false;
-var timer1 = 0;
-var timer2 = 0;
-var timer4 = 0;
-var timer5 = 0;
-var timer6 = 0;
+var controlRightToggle = false;
+var controlLeftToggle = false;
+var controlRightTimer = 0;
+var controlLeftTimer = 0;
+var diceIconTimer = 0;
 var warpingD4 = false;
 var warpingD20 = false;
 var swipeCheck = 0; // 0 = off, 1 = delaying, 2 = on
@@ -572,17 +566,45 @@ var numberSlideCheck = false;
 var muteAll = -1;
 
 // Misc.
-var cursor = {x: 0, y: 0,
-              previousX: 0, previousY: 0,
-              velocityX: 0, velocityY: 0,
-              pressed: false, isPressed: false, released: false};
+var cursor = {
+  x: 0, y: 0,
+  previousX: 0, previousY: 0,
+  velocityX: 0, velocityY: 0,
+  pressed: false, isPressed: false, released: false,
+  set: function () {
+    "use strict";
+    cursor.velocityX = cursor.x - cursor.previousX;
+    cursor.velocityY = cursor.y - cursor.previousY;
+  },
+  reset: function () {
+    "use strict";
+    cursor.pressed = false;
+    cursor.released = false;
+    cursor.previousX = cursor.x;
+    cursor.previousY = cursor.y;
+  }
+};
+var accelerometer = {
+  x: 0, y: 0, z: 0,
+  previousX: 0, previousY: 0, previousZ: 0,
+  velocityX: 0, velocityY: 0, velocityZ: 0,
+  enabled: 0,
+  set: function () {
+    "use strict";
+    accelerometer.velocityX = accelerometer.x - accelerometer.previousX;
+    accelerometer.velocityY = accelerometer.y - accelerometer.previousY;
+    accelerometer.velocityZ = accelerometer.z - accelerometer.previousZ;
+  },
+  reset: function () {
+    "use strict";
+    accelerometer.previousX = accelerometer.x;
+    accelerometer.previousY = accelerometer.y;
+    accelerometer.previousZ = accelerometer.z;
+  }
+};
 var keysPressed = [];
 var keysHeld = [];
 var keysReleased = [];
-var accelerometer = {x: 0, y: 0, z: 0,
-                     previousX: 0, previousY: 0, previousZ: 0,
-                     velocityX: 0, velocityY: 0, velocityZ: 0,
-                     enabled: 0};
 var errorSound;
 
 function getDiceGroupAtCurrentPage() {
@@ -622,8 +644,8 @@ function mousePressOver(sprite) {
 }
 function goRight() {
   "use strict";
-  toggle1 = true;
-  toggle4 = true;
+  controlRightToggle = true;
+  camera.rightToggle = true;
   swipeCheck = 0;
   if (camera.x === canvasWidth * 6.5) {
     warpingD4 = true;
@@ -631,8 +653,8 @@ function goRight() {
 }
 function goLeft() {
   "use strict";
-  toggle2 = true;
-  toggle5 = true;
+  controlLeftToggle = true;
+  camera.leftToggle = true;
   swipeCheck = 0;
   if (camera.x === canvasWidth * 0.5) {
     warpingD20 = true;
@@ -664,42 +686,31 @@ function numDown() {
 }
 function control() {
   "use strict";
-  // Press R
   if (keysPressed[39] === 1) {
     goRight();
-  }
-  // Hold R
-  if (timer1 >= 20 && keysHeld[39]) {
-    toggle4 = true;
-    if (camera.x >= canvasWidth * 6.5) {
-      warpingD4 = true;
-    }
-  }
-  // Press L
+  } // Press Right
+  if (controlRightTimer >= 20 && keysHeld[39]) {
+    camera.rightToggle = true;
+    if (camera.x >= canvasWidth * 6.5) { warpingD4 = true; }
+  } // Hold Right
   if (keysPressed[37] === 1) {
     goLeft();
-  }
-  // Hold L
-  if (timer2 >= 20 && keysHeld[37]) {
-    toggle5 = true;
-    if (camera.x <= canvasWidth * 0.5) {
-      warpingD20 = true;
-    }
-  }
-  // Press Up
+  } // Press Left
+  if (controlLeftTimer >= 20 && keysHeld[37]) {
+    camera.leftToggle = true;
+    if (camera.x <= canvasWidth * 0.5) { warpingD20 = true; }
+  } // Hold Left
   if (keysPressed[38] === 1) {
     numUp();
-  }
-  // Press Down
+  } // Press Up
   if (keysPressed[40] === 1) {
     numDown();
-  }
-  // Press Space
-  if (keysPressed[32] === 1) { // 32 = spacebar
+  } // Press Down
+  if (keysPressed[32] === 1) {
     if (getDiceGroupAtCurrentPage() !== undefined) {
       getDiceGroupAtCurrentPage().rollToggle = true;
     }
-  }
+  } // Press Space
   if (swipeCheck === 1) {
     swipeCheck = 2;
   }
@@ -707,24 +718,20 @@ function control() {
   if (cursor.pressed &&
       mouseIsOver(muter) === false &&
       mouseIsOver(diceSlider.fill) === false && mouseIsOver(diceSlider.start) === false && mouseIsOver(diceSlider.end) === false &&
-      mousePressOver(numberSlider.fill) === false && mousePressOver(numberSlider.start) === false && mousePressOver(numberSlider.end) === false) {
+      mouseIsOver(numberSlider.fill) === false && mouseIsOver(numberSlider.start) === false && mouseIsOver(numberSlider.end) === false) {
     swipeCheck = 1;
   }
   // Determine between swipe or tap(s)
   if (swipeCheck === 2) {
-    if (cursor.velocityX >= 80) {
-      goLeft();
-    } else if (cursor.velocityX <= -80) {
-      goRight();
-    } else if (cursor.velocityY <= -80) {
-      numUp();
-    } else if (cursor.velocityY >= 80) {
-      numDown();
+    if (cursor.velocityX >= 80) { goLeft();
+    } else if (cursor.velocityX <= -80) { goRight();
+    } else if (cursor.velocityY <= -80) { numUp();
+    } else if (cursor.velocityY >= 80) { numDown();
     } else if (cursor.released) {
       if (getDiceGroupAtCurrentPage() !== undefined) {
         getDiceGroupAtCurrentPage().rollToggle = true;
-        swipeCheck = 0;
       }
+      swipeCheck = 0;
     }
   }
 }
@@ -742,26 +749,26 @@ function checkToRollDice() {
 function timers() {
   "use strict";
   var dice;
-  if (toggle1) { // For pressing right
-    timer1 = timer1 + 1;
+  if (controlRightToggle) { // For pressing right
+    controlRightTimer += 1;
   }
-  if (timer1 > 20) {
-    timer1 = 0;
+  if (controlRightTimer > 20) {
+    controlRightTimer = 0;
   }
   if (keysReleased[39]) { // Says "NOT HOLDING RIGHT"
-    toggle1 = false;
-    timer1 = 0;
+    controlRightToggle = false;
+    controlRightTimer = 0;
   }
   
-  if (toggle2) { // For pressing left
-    timer2 = timer2 + 1;
+  if (controlLeftToggle) { // For pressing left
+    controlLeftTimer += 1;
   }
-  if (timer2 > 20) {
-    timer2 = 0;
+  if (controlLeftTimer > 20) {
+    controlLeftTimer = 0;
   }
   if (keysReleased[37]) { // Says "NOT HOLDING LEFT"
-    toggle2 = false;
-    timer2 = 0;
+    controlLeftToggle = false;
+    controlLeftTimer = 0;
   }
   
   for (dice in diceList) {
@@ -773,23 +780,23 @@ function timers() {
     }
   }
   
-  if (toggle4) { // For moving camera right
-    timer4 = timer4 + 1;
+  if (camera.rightToggle) { // For moving camera right
+    camera.rightTimer += 1;
   }
-  if (timer4 > 20) {
-    timer4 = 0;
-    toggle4 = false;
+  if (camera.rightTimer > 20) {
+    camera.rightTimer = 0;
+    camera.rightToggle = false;
   }
     
-  if (toggle5) { // For moving camera left
-    timer5 = timer5 + 1;
+  if (camera.leftToggle) { // For moving camera left
+    camera.leftTimer += 1;
   }
-  if (timer5 > 20) {
-    timer5 = 0;
-    toggle5 = false;
+  if (camera.leftTimer > 20) {
+    camera.leftTimer = 0;
+    camera.leftToggle = false;
   }
   
-  timer6 = timer6 + 1; // For Dice Bar Icon
+  diceIconTimer += 1; // For Dice Bar Icon
 }
 function options() {
   "use strict";
@@ -824,9 +831,9 @@ function sliders() {
     }
   }
   
-  if (timer6 === 30) {
+  if (diceIconTimer === 30) {
     diceSlider.icon.sourceX = diceSlider.icon.sourceX + 62;
-    timer6 = 0;
+    diceIconTimer = 0;
     if (diceSlider.icon.sourceX >= 310) {
       diceSlider.icon.sourceX = 0;
     }
@@ -835,10 +842,10 @@ function sliders() {
       numberSlideCheck === false &&
       swipeCheck === 0) {
     diceSlideCheck = true;
-    toggle4 = false;
-    timer4 = 0;
-    toggle5 = false;
-    timer5 = 0;
+    camera.rightToggle = false;
+    camera.rightTimer = 0;
+    camera.leftToggle = false;
+    camera.leftTimer = 0;
   }
   if (diceSlideCheck) {
     diceSlider.ball.x = camera.mouseX;
@@ -898,7 +905,7 @@ function spriteAnimation() {
     for (i = 1; i < diceList.D4.maxDice + 1; i += 1) {
       diceList.D4[i].x = diceList.D4[i].destinationX + canvasWidth * 7;
     }
-    if ((toggle4 === false && camera.x === canvasWidth * 0.5) || (toggle5 && camera.x === canvasWidth * 6.5)) {
+    if ((camera.rightToggle === false && camera.x === canvasWidth * 0.5) || (camera.leftToggle && camera.x === canvasWidth * 6.5)) {
       warpingD4 = false;
       for (i = 1; i < diceList.D4.maxDice + 1; i += 1) {
         diceList.D4[i].x = diceList.D4[i].destinationX;
@@ -909,7 +916,7 @@ function spriteAnimation() {
     for (i = 1; i < diceList.D20.maxDice + 1; i += 1) {
       diceList.D20[i].x = diceList.D20[i].destinationX - canvasWidth * 7;
     }
-    if ((toggle5 === false && camera.x === canvasWidth * 6.5) || (toggle4 && camera.x === canvasWidth * 0.5)) {
+    if ((camera.leftToggle === false && camera.x === canvasWidth * 6.5) || (camera.rightToggle && camera.x === canvasWidth * 0.5)) {
       warpingD20 = false;
       for (i = 1; i < diceList.D20.maxDice + 1; i += 1) {
         diceList.D20[i].x = diceList.D20[i].destinationX;
@@ -920,10 +927,10 @@ function spriteAnimation() {
 function cameraPos() {
   "use strict";
   var distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
-  if (toggle4) { // Move right
+  if (camera.rightToggle) { // Move right
     camera.x = camera.x + canvasWidth / 20;
   }
-  if (toggle5) { // Move left
+  if (camera.leftToggle) { // Move left
     camera.x = camera.x - canvasWidth / 20;
   }
   if (camera.x <= canvasWidth / -2) {
@@ -944,7 +951,7 @@ function cameraPos() {
     camera.x = (Math.round((diceSlider.ball.x - diceSlider.start.x) / distanceBetweenDiceBarSlots) + 0.5) * canvasWidth;
     diceSlideCheck = false;
   }
-  if (toggle4 === false && toggle5 === false && diceSlideCheck === false) {
+  if (camera.rightToggle === false && camera.leftToggle === false && diceSlideCheck === false) {
     camera.x = (Math.round(camera.x / canvasWidth - 0.5) + 0.5) * canvasWidth;
   }
   camera.mouseX = cursor.x + camera.x - camera.startX;
@@ -1011,17 +1018,11 @@ function listenForControls() {
     keysPressed[event.keyCode] = 0;
     keysReleased[event.keyCode] = true;
   });
-  if (window.DeviceOrientationEvent) {
-    window.addEventListener("deviceorientation", function () {
-      accelerometer.x = event.beta;
-      accelerometer.y = event.gamma;
-      accelerometer.z = event.alpha;
-    }, true);
-  } else if (window.DeviceMotionEvent) {
+  if (window.DeviceMotionEvent) {
     window.addEventListener('devicemotion', function () {
-      accelerometer.x = event.acceleration.x * 2;
-      accelerometer.y = event.acceleration.y * 2;
-      accelerometer.z = event.acceleration.z * 2;
+      accelerometer.x = event.acceleration.x;
+      accelerometer.y = event.acceleration.y;
+      accelerometer.z = event.acceleration.z;
     }, true);
   } else {
     accelerometer.enabled = 0;
@@ -1032,8 +1033,6 @@ function updateText() {
   var i;
   for (i = 0; i < textList.length; i += 1) {
     textList[i].vroom();
-  }
-  for (i = 0; i < textList.length; i += 1) {
     textList[i].update();
   }
 }
@@ -1049,7 +1048,7 @@ function drawSprites() {
     }
   }
 }
-function resetPressedKeys() {
+function resetKeys() {
   "use strict";
   var i;
   for (i = 0; i < keysPressed.length; i += 1) {
@@ -1057,46 +1056,18 @@ function resetPressedKeys() {
       keysPressed[i] = 2;
     }
   }
-}
-function resetReleasedKeys() {
-  "use strict";
-  var i;
   for (i = 0; i < keysReleased.length; i += 1) {
     if (keysReleased[i] === true) {
       keysReleased[i] = false;
     }
   }
 }
-function setMouse() {
-  "use strict";
-  cursor.velocityX = cursor.x - cursor.previousX;
-  cursor.velocityY = cursor.y - cursor.previousY;
-}
-function resetMouse() {
-  "use strict";
-  cursor.pressed = false;
-  cursor.released = false;
-  cursor.previousX = cursor.x;
-  cursor.previousY = cursor.y;
-}
-function setAccelerometer() {
-  "use strict";
-  accelerometer.velocityX = accelerometer.x - accelerometer.previousX;
-  accelerometer.velocityY = accelerometer.y - accelerometer.previousY;
-  accelerometer.velocityZ = accelerometer.z - accelerometer.previousZ;
-}
-function resetAccelerometer() {
-  "use strict";
-  accelerometer.previousX = accelerometer.x;
-  accelerometer.previousY = accelerometer.y;
-  accelerometer.previousZ = accelerometer.z;
-}
 
 function updateGameArea() {
   "use strict";
   myGameArea.clear();
-  setMouse();
-  setAccelerometer();
+  cursor.set();
+  accelerometer.set();
   cameraPos();
   control();
   checkToRollDice();
@@ -1107,10 +1078,9 @@ function updateGameArea() {
   
   updateText();
   drawSprites();
-  resetPressedKeys();
-  resetReleasedKeys();
-  resetMouse();
-  resetAccelerometer();
+  resetKeys();
+  cursor.reset();
+  accelerometer.reset();
 }                                       // Draw Function
 var myGameArea = {
   canvas : document.createElement("canvas"),

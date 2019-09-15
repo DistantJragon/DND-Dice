@@ -706,7 +706,7 @@ function control() {
   if (keysPressed[40] === 1) {
     numDown();
   } // Press Down
-  if (keysPressed[32] === 1) { // 32 = spacebar
+  if (keysPressed[32] === 1) {
     if (getDiceGroupAtCurrentPage() !== undefined) {
       getDiceGroupAtCurrentPage().rollToggle = true;
     }

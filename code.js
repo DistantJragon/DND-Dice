@@ -420,7 +420,7 @@ var numberSlider = {
   slots: undefined,
   ball : undefined
 };
-var muter;
+var muter, accelerometerToggler;
 
 function sliderXPositions() {
   "use strict";
@@ -516,7 +516,8 @@ function allSprites() {
   spriteList.sliderBalls.push(diceSlider.ball, numberSlider.ball);
   
   muter = new Component(115, 130, "Sound.png", 0, 0, "image");
-  spriteList.options.push(muter);
+  accelerometerToggler = new Component(115, 130, "Accelerometer.png", 0, 0, "image");
+  spriteList.options.push(muter, accelerometerToggler);
 }
 
 // Text
@@ -563,7 +564,8 @@ var warpingD20 = false;
 var swipeCheck = 0; // 0 = off, 1 = delaying, 2 = on
 var diceSlideCheck = false;
 var numberSlideCheck = false;
-var muteAll = -1;
+var muteToggle = -1;
+var shakeToggle = -1;
 
 // Misc.
 var cursor = {
@@ -588,7 +590,7 @@ var accelerometer = {
   x: 0, y: 0, z: 0,
   previousX: 0, previousY: 0, previousZ: 0,
   velocityX: 0, velocityY: 0, velocityZ: 0,
-  enabled: 0,
+  enabled: false,
   set: function () {
     "use strict";
     accelerometer.velocityX = accelerometer.x - accelerometer.previousX;
@@ -606,6 +608,7 @@ var keysPressed = [];
 var keysHeld = [];
 var keysReleased = [];
 var errorSound;
+var rollSound;
 
 function getDiceGroupAtCurrentPage() {
   "use strict";
@@ -666,7 +669,7 @@ function numUp() {
     if (getDiceGroupAtCurrentPage().numberOfDice < getDiceGroupAtCurrentPage().maxDice) {
       getDiceGroupAtCurrentPage().numberOfDice += 1;
       getDiceGroupAtCurrentPage().changeDestinations(+1);
-    } else if (muteAll === -1) {
+    } else if (muteToggle === -1) {
       errorSound.play();
     }
   }
@@ -678,7 +681,7 @@ function numDown() {
     if (getDiceGroupAtCurrentPage().numberOfDice > 1) {
       getDiceGroupAtCurrentPage().numberOfDice -= 1;
       getDiceGroupAtCurrentPage().changeDestinations(-1);
-    } else if (muteAll === -1) {
+    } else if (muteToggle === -1) {
       errorSound.play();
     }
   }
@@ -709,6 +712,9 @@ function control() {
   if (keysPressed[32] === 1) {
     if (getDiceGroupAtCurrentPage() !== undefined) {
       getDiceGroupAtCurrentPage().rollToggle = true;
+      if (muteToggle === -1) {
+        rollSound.play();
+      }
     }
   } // Press Space
   if (swipeCheck === 1) {
@@ -716,7 +722,7 @@ function control() {
   }
   // Prepare to determine a swipe or tap
   if (cursor.pressed &&
-      mouseIsOver(muter) === false &&
+      mouseIsOver(muter) === false && mouseIsOver(accelerometerToggler) == false &&
       mouseIsOver(diceSlider.fill) === false && mouseIsOver(diceSlider.start) === false && mouseIsOver(diceSlider.end) === false &&
       mouseIsOver(numberSlider.fill) === false && mouseIsOver(numberSlider.start) === false && mouseIsOver(numberSlider.end) === false) {
     swipeCheck = 1;
@@ -730,8 +736,19 @@ function control() {
     } else if (cursor.released) {
       if (getDiceGroupAtCurrentPage() !== undefined) {
         getDiceGroupAtCurrentPage().rollToggle = true;
+        if (muteToggle === -1) {
+          rollSound.play();
+        }
       }
       swipeCheck = 0;
+    }
+  }
+  if (Math.abs(accelerometer.x) > 20 && shakeToggle === -1 && accelerometer.enabled) {
+    if (getDiceGroupAtCurrentPage() !== undefined && getDiceGroupAtCurrentPage().rollToggle === false) {
+      if (muteToggle === -1) {
+        rollSound.play();
+      }
+      getDiceGroupAtCurrentPage().rollToggle = true;
     }
   }
 }
@@ -801,11 +818,21 @@ function timers() {
 function options() {
   "use strict";
   if (mouseIsOver(muter) && cursor.pressed) {
-    muteAll = muteAll * -1;
+    muteToggle = muteToggle * -1;
   }
-  muter.sourceX = (muteAll * -58) + 58;
+  muter.sourceX = (muteToggle * -58) + 58;
   muter.x = camera.x - canvasWidth / 2 + 15 + muter.width / 2;
   muter.y = 15 + muter.height / 2;
+  if (mouseIsOver(accelerometerToggler) && cursor.pressed) {
+    shakeToggle = shakeToggle * -1;
+  }
+  if (accelerometer.enabled) {
+    accelerometerToggler.sourceX = (shakeToggle * -58) + 58;
+    accelerometerToggler.x = camera.x - canvasWidth / 2 + 15 + accelerometerToggler.width / 2;
+    accelerometerToggler.y = muter.y + muter.height / 2 + 15 + accelerometerToggler.height / 2;
+  } else {
+    accelerometerToggler.y = canvasHeight * 2;
+  }
 }
 function sliders() {
   "use strict";
@@ -1023,9 +1050,8 @@ function listenForControls() {
       accelerometer.x = event.acceleration.x;
       accelerometer.y = event.acceleration.y;
       accelerometer.z = event.acceleration.z;
+      accelerometer.enabled = true;
     }, true);
-  } else {
-    accelerometer.enabled = 0;
   }
 }
 function updateText() {
@@ -1094,6 +1120,7 @@ var myGameArea = {
     allSprites();
     createText();
     errorSound = new Sound("errorSound.mp3");
+    rollSound = new Sound("roll.mp3")
     document.getElementById("theBody").style.zoom = 1 / window.devicePixelRatio;
     this.context = this.canvas.getContext("2d");
     document.body.insertBefore(this.canvas, document.body.childNodes[0]);

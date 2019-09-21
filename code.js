@@ -565,7 +565,7 @@ var swipeCheck = 0; // 0 = off, 1 = delaying, 2 = on
 var diceSlideCheck = false;
 var numberSlideCheck = false;
 var muteToggle = -1;
-var shakeToggle = -1;
+var shakeToggle = 1;
 
 // Misc.
 var cursor = {

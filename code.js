@@ -368,10 +368,8 @@ function DiceType(pageNumber) {
     this.diceResultTotal = 0;
     for (diceResultListIndex = 0; diceResultListIndex < this.numberOfDice * D00Multiplier; diceResultListIndex += 1) {
       this.diceResultTotal = this.diceResultTotal + this.diceResultList[diceResultListIndex];
-      console.log("Result: " + this.diceResultList[diceResultListIndex], diceResultListIndex)
     }
     this.rollTimer += 1;
-    console.log("Done, Total: " + this.diceResultTotal)
   };
   this.moveToIntendedPositions = function () {
     var i, D00Multiplier = 1;

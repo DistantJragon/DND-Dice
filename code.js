@@ -347,18 +347,31 @@ function DiceType(pageNumber) {
       this[1].column = 1;
     };
   }
+  this.diceResultList = [];
+  this.diceResultTotal = 0;
   this.rollTimer = 0;
   this.rollToggle = false;
   this.roll = function () {
-    var i, D00Multiplier = 1;
+    var i, D00Multiplier = 1, diceResultListIndex = 0;
     if (this === diceList.D00) { D00Multiplier = 2; } else { D00Multiplier = 1; }
     for (i = 1; i < this.numberOfDice * D00Multiplier + 1; i += 1) {
-      this[i].sourceX = randomNumber(1, this.sides) * this[i].width;
+      this.diceResultList[i - 1] = randomNumber(1, this.sides)
+      this[i].sourceX = this.diceResultList[i - 1] * this[i].width;
+      if (this === diceList.D00 && (i - 1) % 2 == 0) { this.diceResultList[i - 1] = this.diceResultList[i - 1] * 10 - 10; }
+      if (this === diceList.D00 && (i - 1) % 2 == 1) { this.diceResultList[i - 1] = this.diceResultList[i - 1] - 1; }
+      if (this === diceList.D10) { this.diceResultList[i - 1] = this.diceResultList[i - 1] - 1 };
     }
     for (i = this.numberOfDice * D00Multiplier + 1; i < this.maxDice + 1; i += 1) {
+      this.diceResultList[i - 1] = 0;
       this[i].sourceX = 0;
     }
+    this.diceResultTotal = 0;
+    for (diceResultListIndex = 0; diceResultListIndex < this.numberOfDice * D00Multiplier; diceResultListIndex += 1) {
+      this.diceResultTotal = this.diceResultTotal + this.diceResultList[diceResultListIndex];
+      console.log("Result: " + this.diceResultList[diceResultListIndex], diceResultListIndex)
+    }
     this.rollTimer += 1;
+    console.log("Done, Total: " + this.diceResultTotal)
   };
   this.moveToIntendedPositions = function () {
     var i, D00Multiplier = 1;
@@ -530,6 +543,7 @@ var D00Text1;
 var D12Text1;
 var D20Text1;
 var D20Text2;
+var TotalText;
 
 function createText() {
   "use strict";
@@ -542,6 +556,7 @@ function createText() {
   D12Text1 = new Component("30px", "Consolas", "black", canvasWidth * 5.5 - 25, 30, "text");
   D20Text1 = new Component("30px", "Consolas", "black", canvasWidth * 6.5 - 25, 30, "text");
   D20Text2 = new Component("30px", "Consolas", "black", canvasWidth * -0.5 - 25, 30, "text");
+  TotalText = new Component("45px", "Consolas", "green", diceSlider.start.x - diceSlider.start.width / 2, diceSlider.icon.y - diceSlider.icon.height / 2 - 15, "text");
   D4Text1.text = "D4";
   D4Text2.text = "D4";
   D6Text1.text = "D6";
@@ -551,6 +566,7 @@ function createText() {
   D12Text1.text = "D12";
   D20Text1.text = "D20";
   D20Text2.text = "D20";
+  TotalText.text = "Total: 0"
 }
 
 // Other
@@ -1054,14 +1070,6 @@ function listenForControls() {
     }, true);
   }
 }
-function updateText() {
-  "use strict";
-  var i;
-  for (i = 0; i < textList.length; i += 1) {
-    textList[i].vroom();
-    textList[i].update();
-  }
-}
 function drawSprites() {
   "use strict";
   var i, spriteType;
@@ -1072,6 +1080,18 @@ function drawSprites() {
         spriteList[spriteType][i].update();
       }
     }
+  }
+}
+function updateText() {
+  "use strict";
+  var i;
+  if (getDiceGroupAtCurrentPage() !== undefined) {
+    TotalText.text = "Total: " + (getDiceGroupAtCurrentPage().diceResultTotal);
+  }
+  TotalText.x = diceSlider.start.x - diceSlider.start.width / 2;
+  for (i = 0; i < textList.length; i += 1) {
+    textList[i].vroom();
+    textList[i].update();
   }
 }
 function resetKeys() {
@@ -1102,8 +1122,8 @@ function updateGameArea() {
   sliders();
   spriteAnimation();
   
-  updateText();
   drawSprites();
+  updateText();
   resetKeys();
   cursor.reset();
   accelerometer.reset();

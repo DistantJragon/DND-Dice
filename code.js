@@ -1,11 +1,9 @@
+var canvas = document.getElementById("theCanvas");
+canvas.width = document.body.clientWidth;
+canvas.height = document.body.clientHeight;
+var ctx = canvas.getContext("2d");
 function init() {
-    canvas = document.getElementById("theCanvas");
-    canvas.width = document.body.clientWidth;
-    canvas.height = document.body.clientHeight;
-    canvasW = canvas.width;
-    canvasH = canvas.height;
-
     if (canvas.getContext) {
-        setInterval(run , 33);
+        setInterval(gameLoop(), 10);
     }
 }

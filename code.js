@@ -5,26 +5,31 @@ var gameArea = {
 gameArea.canvas.width = document.body.clientWidth;
 gameArea.canvas.height = document.body.clientHeight;
 
+drawPriorityList = []
 imageList = []
 shapeList = []
 textList = []
 
 var camera = {x: 0, y: 0};
 
-function createNewImage(width, height, source, x, y) {
-    this.image = new Image(),
-    this.image.src = "./media/" + source,
-    this.width = width,
+function createNewImage(width, height, source, x, y, drawPriority) {
+    this.image = new Image();
+    this.image.src = "./media/" + source;
+    this.width = width;
     this.height = height;
-    this.acceleration = 0,
-    this.velocity = 0,
-    this.direction = 0,
-    this.x = x,
-    this.y = y,
-    this.imageTrimStartX = 0,
-    this.imageTrimStartY = 0,
-    this.imageTrimLengthX = width,
-    this.imageTrimLengthY = height,
+    this.acceleration = 0;
+    this.velocity = 0;
+    this.direction = 0;
+    this.x = x;
+    this.y = y;
+    this.imageTrimStartX = 0;
+    this.imageTrimStartY = 0;
+    this.imageTrimLengthX = width;
+    this.imageTrimLengthY = height;
+    if (!(drawPriorityList[drawPriority] instanceof Array)) {
+        drawPriorityList[drawPriority] = []
+    }
+    drawPriorityList[drawPriority].push(this)
     this.update = function() {
         var ctx = gameArea.ctx;
         this.move();

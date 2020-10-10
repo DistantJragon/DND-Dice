@@ -68,7 +68,7 @@ function createNewImage(width, height, source, x, y, drawPriority) {
         this.move();
         ctx.drawImage(
             this.image, 
-            this.this.imageTrimStartX, this.imageTrimStartY, 
+            this.imageTrimStartX, this.imageTrimStartY, 
             this.imageTrimLengthX, this.imageTrimLengthY,
             this.x - camera.x, this.y - camera.y,
             this.width, this.height
@@ -170,13 +170,14 @@ function mouseIsOver(thing, mouseX, mouseY) {
 function startGameLoop() {
     var canvas = gameArea.canvas
     if (canvas.getContext) {
-        imageList.optionsButton = new createNewImage(gameArea.lowerDimension() * 0.1,
-        gameArea.lowerDimension() * 0.1,
-        "options.png",
-        canvas.width * 0.01,
-        canvas.height * 0.01,
-        1
-        )
+        imageList.optionsButton = new createNewImage(
+            gameArea.lowerDimension() * 0.1,
+            gameArea.lowerDimension() * 0.1,
+            "options.png",
+            canvas.width * 0.01,
+            canvas.height * 0.01,
+            1
+        );
         addInteractionSensors(canvas);
         setInterval(gameLoop, 10);
     }

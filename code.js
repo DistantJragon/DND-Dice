@@ -1,8 +1,17 @@
 var gameArea = {
     canvas: document.getElementById("theCanvas"),
-    ctx: this.canvas.getContext("2d"),
+    ctx: document.getElementById("theCanvas").getContext("2d"),
     clear: function() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    updateSprites: function() {
+        for (list in drawPriorityList) {
+            if (list instanceof Array) {
+                for (sprite in drawPriorityList[i]) {
+                    sprite.update();
+                }
+            }
+        }
     }
 };
 gameArea.canvas.width = document.body.clientWidth;
@@ -118,7 +127,7 @@ function startGameLoop() {
 }
 function gameLoop() {
     gameArea.clear()
-
+    gameArea.updateSprites()
 }
 
 function randomInteger(min, max) {;

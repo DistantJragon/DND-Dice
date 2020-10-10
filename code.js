@@ -1,8 +1,6 @@
-console.log('1')
-console.log('2')
 var gameArea = {
     canvas: document.getElementById("theCanvas"),
-    ctx: gameArea.canvas.getContext("2d"),
+    ctx: this.canvas.getContext("2d"),
     clear: function() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }

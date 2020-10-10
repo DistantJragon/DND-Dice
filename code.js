@@ -1,6 +1,19 @@
+drawPriorityList = [];
+imageList = {};
+shapeList = {};
+textList = {};
+
+var tempCanvas = document.getElementById("theCanvas");
 var gameArea = {
-    canvas: document.getElementById("theCanvas"),
-    ctx: document.getElementById("theCanvas").getContext("2d"),
+    canvas: tempCanvas,
+    ctx: tempCanvas.getContext("2d"),
+    lowerDimension: function() {
+        if (this.canvas.height < this.canvas.width) {
+            return this.canvas.width;
+        } else {
+            return this.canvas.height;
+        }
+    },
     clear: function() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
@@ -12,18 +25,25 @@ var gameArea = {
                 }
             }
         }
+    },
+    resizeCanvas: function() {
+        this.canvas.width  = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    },
+    setFullscreen: function() {
+        if(this.canvas.webkitRequestFullScreen) {
+            this.canvas.webkitRequestFullScreen();
+        } else if (this.canvas.mozRequestFullScreen) {
+            this.canvas.mozRequestFullScreen();
+        }
     }
 };
-gameArea.canvas.width = document.body.clientWidth;
-gameArea.canvas.height = document.body.clientHeight;
-
-drawPriorityList = []
-imageList = []
-shapeList = []
-textList = []
+gameArea.resizeCanvas();
 
 var camera = {x: 0, y: 0};
 var gradient;
+
+strokeWidth = "10px";
 
 function createNewImage(width, height, source, x, y, drawPriority) {
     this.image = new Image();
@@ -42,8 +62,7 @@ function createNewImage(width, height, source, x, y, drawPriority) {
     if (!(drawPriorityList[drawPriority] instanceof Array)) {
         drawPriorityList[drawPriority] = [];
     }
-    drawPriorityList[drawPriority].push(this)
-    imageList.push(this.image);
+    drawPriorityList[drawPriority].push(this);
     this.update = function() {
         var ctx = gameArea.ctx;
         this.move();
@@ -54,8 +73,8 @@ function createNewImage(width, height, source, x, y, drawPriority) {
             this.x - camera.x, this.y - camera.y,
             this.width, this.height
         );
-    }
-    this.move() = function() {
+    },
+    this.move = function() {
         this.velocity += this.acceleration;
         this.x += this.velocity * Math.cos(this.direction);
         this.y += this.velocity * Math.sin(this.direction);
@@ -77,20 +96,18 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
     if (!(drawPriorityList[drawPriority] instanceof Array)) {
         drawPriorityList[drawPriority] = [];
     }
-    drawPriorityList[drawPriority].push(this)
-    shapeList.push(this)
+    drawPriorityList[drawPriority].push(this);
     this.update = function() {
         var ctx = gameArea.ctx;
         ctx.beginPath();
-        if (this.shape == "rectangle") { ctx.rect(x - camera.x, this.y - camera.y, this.width, this,height);
-        } else if (this.shape == "circle") { ctx.arc(this.x, this.y, this.width, 0, 2 * Math.PI);
-        }
+        if (this.shape == "rectangle") { ctx.rect(x - camera.x, this.y - camera.y, this.width, this,height); }
+        else if (this.shape == "circle") { ctx.arc(this.x, this.y, this.width, 0, 2 * Math.PI); }
         ctx.fillStyle = this.fillStyle;
         ctx.fill();
         ctx.lineWidth = this.stokeWidth;
         ctx.strokeStyle = this.strokeStyle;
         ctx.stroke();
-    }
+    },
     this.move = function() {
         this.velocity += this.acceleration;
         this.x += this.velocity * Math.cos(this.direction);
@@ -99,9 +116,9 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
 }
 
 function createNewText(fontSize, font, color, x, y, drawPriority) {
-    this.fontSize = fontSize
-    this.font = font
-    this.color = color
+    this.fontSize = fontSize;
+    this.font = font;
+    this.color = color;
     this.acceleration = 0;
     this.velocity = 0;
     this.direction = 0;
@@ -111,31 +128,62 @@ function createNewText(fontSize, font, color, x, y, drawPriority) {
         drawPriorityList[drawPriority] = [];
     }
     drawPriorityList[drawPriority].push(this)
-    textList.push(this);
     this.update = function() {
         var ctx = myGameArea.context;
             ctx.font = this.fontSize + " " + this.font;
             ctx.fillStyle = this.color;
             ctx.fillText(this.text, this.x - camera.x, this.y - camera.y);
-    }
-    this.move() = function() {
+    },
+    this.move = function() {
         this.velocity += this.acceleration;
         this.x += this.velocity * Math.cos(this.direction);
         this.y += this.velocity * Math.sin(this.direction);
     }
 }
 
+function randomInteger(min, max) {;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function addInteractionSensors(canvas) {
+    canvas.addEventListener('mouseDown', mousePressed(Event));
+}
+
+function mousePressed(e) {
+    var cursorX = e.pageX;
+    var cursorY = e.pageY;
+    if (mouseIsOver(imageList.optionsButton, cursorX, cursorY)) { gameArea.setFullscreen(); }
+}
+
+function mouseIsOver(thing, mouseX, mouseY) {
+    thingXStart = thing.x;
+    thingXEnd = thing.x + thing.width;
+    thingYStart = thing.y;
+    thingYEnd = thing.y + thing.height;
+    return  (
+        mouseX >= thingXStart && 
+        mouseX <= thingXEnd && 
+        mouseY >= thingYStart && 
+        mouseY <= thingYEnd
+    );
+}
 function startGameLoop() {
-    if (gameArea.canvas.getContext) {
+    var canvas = gameArea.canvas
+    if (canvas.getContext) {
+        imageList.optionsButton = new createNewImage(gameArea.lowerDimension() * 0.1,
+        gameArea.lowerDimension() * 0.1,
+        "options.png",
+        canvas.width * 0.01,
+        canvas.height * 0.01,
+        1
+        )
+        addInteractionSensors(canvas);
         setInterval(gameLoop, 10);
     }
 }
 function gameLoop() {
+    if (!(gameArea.canvas.fullscreen)) { gameArea.resizeCanvas(); }
     gameArea.clear();
     gameArea.updateSprites();
-}
-
-function randomInteger(min, max) {;
-    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 startGameLoop();

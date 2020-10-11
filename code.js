@@ -57,8 +57,8 @@ function createNewImage(width, height, source, x, y, drawPriority) {
     this.y = y;
     this.imageTrimStartX = 0;
     this.imageTrimStartY = 0;
-    this.imageTrimLengthX = width;
-    this.imageTrimLengthY = height;
+    this.imageTrimLengthX = 1440;
+    this.imageTrimLengthY = 1440;
     if (!(drawPriorityList[drawPriority] instanceof Array)) {
         drawPriorityList[drawPriority] = [];
     }
@@ -174,8 +174,8 @@ function startGameLoop() {
             gameArea.lowerDimension() * 0.1,
             gameArea.lowerDimension() * 0.1,
             "options.png",
-            canvas.width * 0.01,
-            canvas.height * 0.01,
+            gameArea.lowerDimension() * 0.01,
+            gameArea.lowerDimension() * 0.01,
             1
         );
         addInteractionSensors(canvas);

@@ -7,11 +7,12 @@ var tempCanvas = document.getElementById("theCanvas");
 var gameArea = {
     canvas: tempCanvas,
     ctx: tempCanvas.getContext("2d"),
+    spriteScale: 0.1,
     lowerDimension: function() {
         if (this.canvas.height < this.canvas.width) {
-            return this.canvas.width;
-        } else {
             return this.canvas.height;
+        } else {
+            return this.canvas.width;
         }
     },
     clear: function() {
@@ -65,7 +66,7 @@ function createNewImage(width, height, source, x, y, drawPriority) {
     drawPriorityList[drawPriority].push(this);
     this.update = function() {
         var ctx = gameArea.ctx;
-        this.move();
+        this.movement();
         ctx.drawImage(
             this.image, 
             this.imageTrimStartX, this.imageTrimStartY, 
@@ -74,10 +75,14 @@ function createNewImage(width, height, source, x, y, drawPriority) {
             this.width, this.height
         );
     },
-    this.move = function() {
+    this.movement = function() {
         this.velocity += this.acceleration;
         this.x += this.velocity * Math.cos(this.direction);
         this.y += this.velocity * Math.sin(this.direction);
+    },
+    this.moveCenterToSides = function(moveX, moveY) {
+        this.x = this.x + ((this.width / 2) * moveX)
+        this.y = this.y + ((this.height / 2) * moveY)
     }
 }
 
@@ -99,6 +104,7 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
     drawPriorityList[drawPriority].push(this);
     this.update = function() {
         var ctx = gameArea.ctx;
+        this.movement();
         ctx.beginPath();
         if (this.shape == "rectangle") { ctx.rect(x - camera.x, this.y - camera.y, this.width, this,height); }
         else if (this.shape == "circle") { ctx.arc(this.x, this.y, this.width, 0, 2 * Math.PI); }
@@ -108,10 +114,14 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
         ctx.strokeStyle = this.strokeStyle;
         ctx.stroke();
     },
-    this.move = function() {
+    this.movement = function() {
         this.velocity += this.acceleration;
         this.x += this.velocity * Math.cos(this.direction);
         this.y += this.velocity * Math.sin(this.direction);
+    },
+    this.moveCenterToSides = function(moveX, moveY) {
+        this.x = this.x + ((this.width / 2) * moveX)
+        this.y = this.y + ((this.height / 2) * moveY)
     }
 }
 
@@ -130,11 +140,12 @@ function createNewText(fontSize, font, color, x, y, drawPriority) {
     drawPriorityList[drawPriority].push(this)
     this.update = function() {
         var ctx = myGameArea.context;
-            ctx.font = this.fontSize + " " + this.font;
-            ctx.fillStyle = this.color;
-            ctx.fillText(this.text, this.x - camera.x, this.y - camera.y);
+        this.movement();
+        ctx.font = this.fontSize + " " + this.font;
+        ctx.fillStyle = this.color;
+        ctx.fillText(this.text, this.x - camera.x, this.y - camera.y);
     },
-    this.move = function() {
+    this.movement = function() {
         this.velocity += this.acceleration;
         this.x += this.velocity * Math.cos(this.direction);
         this.y += this.velocity * Math.sin(this.direction);
@@ -146,7 +157,7 @@ function randomInteger(min, max) {;
 }
 
 function addInteractionSensors(canvas) {
-    canvas.addEventListener('mouseDown', mousePressed(Event));
+    canvas.addEventListener('mousedown', mousePressed);
 }
 
 function mousePressed(e) {
@@ -170,20 +181,21 @@ function mouseIsOver(thing, mouseX, mouseY) {
 function startGameLoop() {
     var canvas = gameArea.canvas
     if (canvas.getContext) {
-        imageList.optionsButton = new createNewImage(
-            gameArea.lowerDimension() * 0.1,
-            gameArea.lowerDimension() * 0.1,
-            "options.png",
-            gameArea.lowerDimension() * 0.01,
-            gameArea.lowerDimension() * 0.01,
-            1
-        );
+        createAllSprites();
         addInteractionSensors(canvas);
         setInterval(gameLoop, 10);
     }
 }
+function createAllSprites() {
+    spriteScale = gameArea.spriteScale;
+    lowerDimension = gameArea.lowerDimension();
+    imageList.optionsButton = new createNewImage(
+        lowerDimension * spriteScale, lowerDimension * spriteScale,
+        "options.png", lowerDimension * 0.01, lowerDimension * 0.01, 1 );
+    // imageList.sliderStart = new createNewShape("circle", "BFBFBF", "0px", "#00000000", lowerDimension * spriteScale * 0.6, lowerDimension * spriteScale * 0.6);
+}
 function gameLoop() {
-    if (!(gameArea.canvas.fullscreen)) { gameArea.resizeCanvas(); }
+    gameArea.resizeCanvas();
     gameArea.clear();
     gameArea.updateSprites();
 }

@@ -44,8 +44,6 @@ gameArea.resizeCanvas();
 var camera = {x: 0, y: 0};
 var gradient;
 
-strokeWidth = "10px";
-
 function createNewImage(width, height, source, x, y, drawPriority) {
     this.image = new Image();
     this.image.src = "./media/" + source;

@@ -1,13 +1,14 @@
-drawPriorityList = [];
-imageList = {};
-shapeList = {};
-textList = {};
+var drawPriorityList = [];
+var imageList = {};
+var shapeList = {};
+var textList = {};
 
 var tempCanvas = document.getElementById("theCanvas");
 var gameArea = {
     canvas: tempCanvas,
     ctx: tempCanvas.getContext("2d"),
     spriteScale: 0.1,
+    canvasSizeChanged: false,
     lowerDimension: function() {
         if (this.canvas.height < this.canvas.width) {
             return this.canvas.height;
@@ -20,7 +21,7 @@ var gameArea = {
     },
     updateSprites: function() {
         for (list of drawPriorityList) {
-            if (list instanceof Array) {
+            if (list) {
                 for (sprite of list) {
                     sprite.update();
                 }
@@ -28,11 +29,18 @@ var gameArea = {
         }
     },
     resizeCanvas: function() {
-        this.canvas.width  = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        this.canvasSizeChanged = false;
+        if (this.canvas.width != window.innerWidth) {
+            this.canvas.width  = window.innerWidth;
+            this.canvasSizeChanged = true;
+        }
+        if (this.canvas.height != window.innerHeight) {
+            this.canvas.height  = window.innerHeight;
+            this.canvasSizeChanged = true;
+        }
     },
     setFullscreen: function() {
-        if(this.canvas.webkitRequestFullScreen) {
+        if (this.canvas.webkitRequestFullScreen) {
             this.canvas.webkitRequestFullScreen();
         } else if (this.canvas.mozRequestFullScreen) {
             this.canvas.mozRequestFullScreen();
@@ -58,7 +66,7 @@ function createNewImage(width, height, source, x, y, drawPriority) {
     this.imageTrimStartY = 0;
     this.imageTrimLengthX = 1440;
     this.imageTrimLengthY = 1440;
-    if (!(drawPriorityList[drawPriority] instanceof Array)) {
+    if (!(drawPriorityList[drawPriority])) {
         drawPriorityList[drawPriority] = [];
     }
     drawPriorityList[drawPriority].push(this);
@@ -87,6 +95,7 @@ function createNewImage(width, height, source, x, y, drawPriority) {
 function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height, x, y, drawPriority) {
     this.width = width;
     this.height = height;
+    if (shape == "circle") { this.radius = this.width / 2 }
     this.fillStyle = fillStyle;
     this.stokeWidth = stokeWidth;
     this.strokeStyle = strokeStyle;
@@ -96,7 +105,7 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
     this.direction = 0;
     this.x = x;
     this.y = y;
-    if (!(drawPriorityList[drawPriority] instanceof Array)) {
+    if (!(drawPriorityList[drawPriority])) {
         drawPriorityList[drawPriority] = [];
     }
     drawPriorityList[drawPriority].push(this);
@@ -105,7 +114,7 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
         this.movement();
         ctx.beginPath();
         if (this.shape == "rectangle") { ctx.rect(x - camera.x, this.y - camera.y, this.width, this,height); }
-        else if (this.shape == "circle") { ctx.arc(this.x, this.y, this.width, 0, 2 * Math.PI); }
+        else if (this.shape == "circle") { ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, 2 * Math.PI); }
         ctx.fillStyle = this.fillStyle;
         ctx.fill();
         ctx.lineWidth = this.stokeWidth;
@@ -132,7 +141,7 @@ function createNewText(fontSize, font, color, x, y, drawPriority) {
     this.direction = 0;
     this.x = x;
     this.y = y;
-    if (!(drawPriorityList[drawPriority] instanceof Array)) {
+    if (!(drawPriorityList[drawPriority])) {
         drawPriorityList[drawPriority] = [];
     }
     drawPriorityList[drawPriority].push(this)
@@ -165,10 +174,10 @@ function mousePressed(e) {
 }
 
 function mouseIsOver(thing, mouseX, mouseY) {
-    thingXStart = thing.x;
-    thingXEnd = thing.x + thing.width;
-    thingYStart = thing.y;
-    thingYEnd = thing.y + thing.height;
+    var thingXStart = thing.x;
+    var thingXEnd = thing.x + thing.width;
+    var thingYStart = thing.y;
+    var thingYEnd = thing.y + thing.height;
     return  (
         mouseX >= thingXStart && 
         mouseX <= thingXEnd && 
@@ -185,12 +194,19 @@ function startGameLoop() {
     }
 }
 function createAllSprites() {
-    spriteScale = gameArea.spriteScale;
-    lowerDimension = gameArea.lowerDimension();
+    var spriteScale = gameArea.spriteScale;
+    var lowerDimension = gameArea.lowerDimension();
     imageList.optionsButton = new createNewImage(
         lowerDimension * spriteScale, lowerDimension * spriteScale,
-        "options.png", lowerDimension * 0.01, lowerDimension * 0.01, 1 );
-    // imageList.sliderStart = new createNewShape("circle", "BFBFBF", "0px", "#00000000", lowerDimension * spriteScale * 0.6, lowerDimension * spriteScale * 0.6);
+        "options.png", lowerDimension * 0.01, lowerDimension * 0.01, 1);
+    var dBIWidth = lowerDimension * spriteScale * 0.55;
+    imageList.diceBarIcon = new createNewImage(
+        dBIWidth, dBIWidth, 
+        "dice.png", lowerDimension * 0.01, lowerDimension * -0.01 + gameArea.canvas.height - dBIWidth, 1);
+    shapeList.sliderStart = new createNewShape(
+        "circle", "#BFBFBF", "0px", "#00000000",
+        lowerDimension * spriteScale * 0.55, lowerDimension * spriteScale * 0.55,
+        imageList.diceBarIcon.x + imageList.diceBarIcon.width + 10, imageList.diceBarIcon.y, 1)
 }
 function gameLoop() {
     gameArea.resizeCanvas();

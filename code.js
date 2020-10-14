@@ -2,6 +2,7 @@ var drawPriorityList = [];
 var imageList = {};
 var shapeList = {};
 var textList = {};
+var hudList = [];
 
 var tempCanvas = document.getElementById("theCanvas");
 var gameArea = {
@@ -52,7 +53,7 @@ gameArea.resizeCanvas();
 var camera = {x: 0, y: 0};
 var gradient;
 
-function createNewImage(width, height, source, x, y, drawPriority) {
+function createNewImage(width, height, source, x, y, drawPriority, hud) {
     this.image = new Image();
     this.image.src = "./media/" + source;
     this.width = width;
@@ -66,10 +67,10 @@ function createNewImage(width, height, source, x, y, drawPriority) {
     this.imageTrimStartY = 0;
     this.imageTrimLengthX = 1440;
     this.imageTrimLengthY = 1440;
-    if (!(drawPriorityList[drawPriority])) {
-        drawPriorityList[drawPriority] = [];
-    }
+    if (!(drawPriorityList[drawPriority])) {drawPriorityList[drawPriority] = [];}
     drawPriorityList[drawPriority].push(this);
+    this.hud = hud;
+    if (this.hud) {hudList.push(this)}
     this.update = function() {
         var ctx = gameArea.ctx;
         this.movement();
@@ -92,10 +93,10 @@ function createNewImage(width, height, source, x, y, drawPriority) {
     }
 }
 
-function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height, x, y, drawPriority) {
+function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height, x, y, drawPriority, hud) {
     this.width = width;
     this.height = height;
-    if (shape == "circle") { this.radius = this.width / 2 }
+    if (shape == "circle") {this.radius = this.width / 2;}
     this.fillStyle = fillStyle;
     this.stokeWidth = stokeWidth;
     this.strokeStyle = strokeStyle;
@@ -109,12 +110,14 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
         drawPriorityList[drawPriority] = [];
     }
     drawPriorityList[drawPriority].push(this);
+    this.hud = hud;
+    if (this.hud) {hudList.push(this)}
     this.update = function() {
         var ctx = gameArea.ctx;
         this.movement();
         ctx.beginPath();
-        if (this.shape == "rectangle") { ctx.rect(x - camera.x, this.y - camera.y, this.width, this,height); }
-        else if (this.shape == "circle") { ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, 2 * Math.PI); }
+        if (this.shape == "rectangle") {ctx.rect(this.x - camera.x, this.y - camera.y, this.width, this.height);}
+        else if (this.shape == "circle") {ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, 2 * Math.PI);}
         ctx.fillStyle = this.fillStyle;
         ctx.fill();
         ctx.lineWidth = this.stokeWidth;
@@ -132,7 +135,7 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
     }
 }
 
-function createNewText(fontSize, font, color, x, y, drawPriority) {
+function createNewText(fontSize, font, color, x, y, drawPriority, hud) {
     this.fontSize = fontSize;
     this.font = font;
     this.color = color;
@@ -145,6 +148,8 @@ function createNewText(fontSize, font, color, x, y, drawPriority) {
         drawPriorityList[drawPriority] = [];
     }
     drawPriorityList[drawPriority].push(this)
+    this.hud = hud;
+    if (this.hud) {hudList.push(this)}
     this.update = function() {
         var ctx = myGameArea.context;
         this.movement();
@@ -170,7 +175,7 @@ function addInteractionSensors(canvas) {
 function mousePressed(e) {
     var cursorX = e.pageX;
     var cursorY = e.pageY;
-    if (mouseIsOver(imageList.optionsButton, cursorX, cursorY)) { gameArea.setFullscreen(); }
+    if (mouseIsOver(imageList.optionsButton, cursorX, cursorY)) {gameArea.setFullscreen();}
 }
 
 function mouseIsOver(thing, mouseX, mouseY) {
@@ -185,6 +190,69 @@ function mouseIsOver(thing, mouseX, mouseY) {
         mouseY <= thingYEnd
     );
 }
+
+function controlHUD() {
+    var options = imageList.optionsButton;
+    var tDSI = imageList.typeOfDiceSliderIcon;
+    var nDSI = imageList.numberOfDiceSliderIcon;
+    tDSI.timer += 1;
+    if (tDSI.timer > 40) {
+        tDSI.timer = 0;
+        tDSI.imageTrimStartX += 1440;
+    }
+    if (tDSI.imageTrimStartX > 5760) {
+        tDSI.imageTrimStartX = 0;
+    }
+    for (hudElement of hudList) {
+        hudElement.x += camera.x;
+        hudElement.y += camera.y;
+    }
+}
+function resetHud() {
+    for (hudElement of hudList) {
+        hudElement.x -= camera.x;
+        hudElement.y -= camera.y;
+    }
+}
+
+function createAllSprites() {
+    var spriteScale = gameArea.spriteScale;
+    var lowerDimension = gameArea.lowerDimension();
+    imageList.optionsButton = new createNewImage(
+        lowerDimension * spriteScale, lowerDimension * spriteScale,
+        "options.png", lowerDimension * 0.01, lowerDimension * 0.01, 1, true
+    );
+    var dBIWidth = lowerDimension * spriteScale * 0.55;
+    imageList.typeOfDiceSliderIcon = new createNewImage(
+        dBIWidth, dBIWidth, 
+        "dice.png", 
+        lowerDimension * 0.01, 
+        lowerDimension * -0.01 + gameArea.canvas.height - dBIWidth, 1, true
+    );
+    imageList.typeOfDiceSliderIcon.timer = 0;
+    imageList.numberOfDiceSliderIcon = new createNewImage(
+        dBIWidth, dBIWidth,
+        "poundSign.png",
+        lowerDimension * -0.01 + gameArea.canvas.width - dBIWidth,
+        lowerDimension * -0.01 + gameArea.canvas.height - dBIWidth, 1, true
+    );
+    var tDSI = imageList.typeOfDiceSliderIcon;
+    var nDSI = imageList.numberOfDiceSliderIcon;
+    shapeList.typeOfDiceSliderStart = new createNewShape(
+        "circle", "#BFBFBF", "0px", "#00000000", dBIWidth, dBIWidth,
+        tDSI.x + dBIWidth + 10, tDSI.y, 1, true
+    );
+    shapeList.typeOfDiceSliderEnd = new createNewShape(
+        "circle", "#BFBFBF", "0px", "#00000000", dBIWidth, dBIWidth,
+        nDSI.x - dBIWidth - 10, nDSI.y, 1, true
+    );
+    var sS = shapeList.typeOfDiceSliderStart;
+    var sE = shapeList.typeOfDiceSliderEnd;
+    shapeList.typeOfDiceSliderBar = new createNewShape(
+        "rectangle", "#BFBFBF", "0px", "#00000000", sE.x - sS.x, dBIWidth,
+        sS.x + dBIWidth / 2, sS.y, 1, true
+    );
+}
 function startGameLoop() {
     var canvas = gameArea.canvas
     if (canvas.getContext) {
@@ -193,24 +261,12 @@ function startGameLoop() {
         setInterval(gameLoop, 10);
     }
 }
-function createAllSprites() {
-    var spriteScale = gameArea.spriteScale;
-    var lowerDimension = gameArea.lowerDimension();
-    imageList.optionsButton = new createNewImage(
-        lowerDimension * spriteScale, lowerDimension * spriteScale,
-        "options.png", lowerDimension * 0.01, lowerDimension * 0.01, 1);
-    var dBIWidth = lowerDimension * spriteScale * 0.55;
-    imageList.diceBarIcon = new createNewImage(
-        dBIWidth, dBIWidth, 
-        "dice.png", lowerDimension * 0.01, lowerDimension * -0.01 + gameArea.canvas.height - dBIWidth, 1);
-    shapeList.sliderStart = new createNewShape(
-        "circle", "#BFBFBF", "0px", "#00000000",
-        lowerDimension * spriteScale * 0.55, lowerDimension * spriteScale * 0.55,
-        imageList.diceBarIcon.x + imageList.diceBarIcon.width + 10, imageList.diceBarIcon.y, 1)
-}
 function gameLoop() {
     gameArea.resizeCanvas();
+    // move camera
     gameArea.clear();
+    controlHUD();
     gameArea.updateSprites();
+    resetHud();
 }
 startGameLoop();

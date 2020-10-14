@@ -2,6 +2,7 @@ var drawPriorityList = [];
 var imageList = {};
 var shapeList = {};
 var textList = {};
+var diceList = {};
 var hudList = [];
 
 var tempCanvas = document.getElementById("theCanvas");
@@ -53,7 +54,7 @@ gameArea.resizeCanvas();
 var camera = {x: 0, y: 0};
 var gradient;
 
-function createNewImage(width, height, source, x, y, drawPriority, hud) {
+function createNewImage(width, height, source, x, y, drawPriority) {
     this.image = new Image();
     this.image.src = "./media/" + source;
     this.width = width;
@@ -69,8 +70,8 @@ function createNewImage(width, height, source, x, y, drawPriority, hud) {
     this.imageTrimLengthY = 1440;
     if (!(drawPriorityList[drawPriority])) {drawPriorityList[drawPriority] = [];}
     drawPriorityList[drawPriority].push(this);
-    this.hud = hud;
-    if (this.hud) {hudList.push(this)}
+    if (drawPriority > 0) {this.hud = true; hudList.push(this);
+    } else {this.hud = false;}
     this.update = function() {
         var ctx = gameArea.ctx;
         this.movement();
@@ -93,7 +94,7 @@ function createNewImage(width, height, source, x, y, drawPriority, hud) {
     }
 }
 
-function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height, x, y, drawPriority, hud) {
+function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height, x, y, drawPriority) {
     this.width = width;
     this.height = height;
     if (shape == "circle") {this.radius = this.width / 2;}
@@ -110,7 +111,8 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
         drawPriorityList[drawPriority] = [];
     }
     drawPriorityList[drawPriority].push(this);
-    this.hud = hud;
+    if (drawPriority > 0) {this.hud = true;
+    } else {this.hud = false;}
     if (this.hud) {hudList.push(this)}
     this.update = function() {
         var ctx = gameArea.ctx;
@@ -135,7 +137,7 @@ function createNewShape(shape, fillStyle, stokeWidth, strokeStyle, width, height
     }
 }
 
-function createNewText(fontSize, font, color, x, y, drawPriority, hud) {
+function createNewText(fontSize, font, color, x, y, drawPriority) {
     this.fontSize = fontSize;
     this.font = font;
     this.color = color;
@@ -148,8 +150,8 @@ function createNewText(fontSize, font, color, x, y, drawPriority, hud) {
         drawPriorityList[drawPriority] = [];
     }
     drawPriorityList[drawPriority].push(this)
-    this.hud = hud;
-    if (this.hud) {hudList.push(this)}
+    if (drawPriority > 0) {this.hud = true; hudList.push(this);
+    } else {this.hud = false;}
     this.update = function() {
         var ctx = myGameArea.context;
         this.movement();
@@ -215,48 +217,63 @@ function resetHud() {
     }
 }
 
-function createAllSprites() {
+function createHudSprites() {
     var spriteScale = gameArea.spriteScale;
     var lowerDimension = gameArea.lowerDimension();
     imageList.optionsButton = new createNewImage(
         lowerDimension * spriteScale, lowerDimension * spriteScale,
-        "options.png", lowerDimension * 0.01, lowerDimension * 0.01, 1, true
+        "options.png", lowerDimension * 0.01, lowerDimension * 0.01, 1
     );
-    var dBIWidth = lowerDimension * spriteScale * 0.55;
+    var hudWidth = lowerDimension * spriteScale * 0.55;
     imageList.typeOfDiceSliderIcon = new createNewImage(
-        dBIWidth, dBIWidth, 
+        hudWidth, hudWidth, 
         "dice.png", 
         lowerDimension * 0.01, 
-        lowerDimension * -0.01 + gameArea.canvas.height - dBIWidth, 1, true
+        lowerDimension * -0.01 + gameArea.canvas.height - hudWidth, 1
     );
     imageList.typeOfDiceSliderIcon.timer = 0;
     imageList.numberOfDiceSliderIcon = new createNewImage(
-        dBIWidth, dBIWidth,
+        hudWidth, hudWidth,
         "poundSign.png",
-        lowerDimension * -0.01 + gameArea.canvas.width - dBIWidth,
-        lowerDimension * -0.01 + gameArea.canvas.height - dBIWidth, 1, true
+        lowerDimension * -0.01 + gameArea.canvas.width - hudWidth,
+        lowerDimension * -0.01 + gameArea.canvas.height - hudWidth, 1
     );
     var tDSI = imageList.typeOfDiceSliderIcon;
     var nDSI = imageList.numberOfDiceSliderIcon;
     shapeList.typeOfDiceSliderStart = new createNewShape(
-        "circle", "#BFBFBF", "0px", "#00000000", dBIWidth, dBIWidth,
-        tDSI.x + dBIWidth + 10, tDSI.y, 1, true
+        "circle", "#BFBFBF", "0px", "#00000000", hudWidth, hudWidth,
+        tDSI.x + hudWidth + 10, tDSI.y, 1
     );
     shapeList.typeOfDiceSliderEnd = new createNewShape(
-        "circle", "#BFBFBF", "0px", "#00000000", dBIWidth, dBIWidth,
-        nDSI.x - dBIWidth - 10, nDSI.y, 1, true
+        "circle", "#BFBFBF", "0px", "#00000000", hudWidth, hudWidth,
+        nDSI.x - hudWidth - 10, nDSI.y, 1
     );
     var sS = shapeList.typeOfDiceSliderStart;
     var sE = shapeList.typeOfDiceSliderEnd;
     shapeList.typeOfDiceSliderBar = new createNewShape(
-        "rectangle", "#BFBFBF", "0px", "#00000000", sE.x - sS.x, dBIWidth,
-        sS.x + dBIWidth / 2, sS.y, 1, true
+        "rectangle", "#BFBFBF", "0px", "#00000000", sE.x - sS.x, hudWidth,
+        sS.x + hudWidth / 2, sS.y, 1
+    );
+
+    shapeList.numberOfDiceSliderStart = new createNewShape(
+        "circle", "#BFBFBF", "0px", "#00000000", hudWidth, hudWidth,
+        nDSI.x, nDSI.y - hudWidth - 10, 1
+    );
+    shapeList.numberOfDiceSliderEnd = new createNewShape(
+        "circle", "#BFBFBF", "0px", "#00000000", hudWidth, hudWidth,
+        nDSI.x, lowerDimension * 0.01, 1
+    );
+    sS = shapeList.numberOfDiceSliderStart;
+    sE = shapeList.numberOfDiceSliderEnd;
+    shapeList.numberOfDiceSliderBar = new createNewShape(
+        "rectangle", "#BFBFBF", "0px", "#00000000", hudWidth, sE.y - sS.y,
+        sS.x, sS.y + hudWidth / 2, 1
     );
 }
 function startGameLoop() {
     var canvas = gameArea.canvas
     if (canvas.getContext) {
-        createAllSprites();
+        createHudSprites();
         addInteractionSensors(canvas);
         setInterval(gameLoop, 10);
     }

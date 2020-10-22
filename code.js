@@ -2,7 +2,7 @@ var drawPriorityList = [];
 var imageList = {};
 var shapeList = {};
 var textList = {};
-var diceList = {};
+var diceList = [];
 var hudList = [];
 var typeOfDiceSlotsList = [];
 var numberOfDiceSlotsList = [];
@@ -150,9 +150,10 @@ function shapeSprite(shape, fillStyle, stokeWidth, strokeStyle, width, height, x
     }
 }
 
-function textSprite(fontSize, font, color, x, y, drawPriority) {
+function textSprite(fontSize, font, textAllignment, color, x, y, drawPriority) {
     this.fontSize = fontSize;
     this.font = font;
+    this.textAllignment = textAllignment;
     this.color = color;
     this.acceleration = 0;
     this.velocity = 0;
@@ -170,6 +171,7 @@ function textSprite(fontSize, font, color, x, y, drawPriority) {
         this.movement();
         ctx.font = this.fontSize + " " + this.font;
         ctx.fillStyle = this.color;
+        ctx.textAllign = this.textAllignment;
         ctx.fillText(this.text, this.x - camera.x, this.y - camera.y);
     },
     this.movement = function() {
@@ -191,25 +193,22 @@ function diceType(numberOfSides, pageNumber, numberOfDiceInAGroup, diceShapeNumb
     this.numberOfSides = numberOfSides;
     this.diceList = [];
     this.diceShapeNumber = diceShapeNumber;
-    this.getListOfDiceInRow = function(rowNumber) {
-        var i, diceListInThisRow = [];
-        for (i = 1; i < this.createdDice + 1; i += 1) {
-          if (this[i].row === rowNumber) {
-            diceListInThisRow.push(this[i]);
-          }
+    this.diceInRow = [];
+    this.diceinColumn = [];
+    this.createDice() = function() {
+        for (i = this.createdDice; i < maxNumberOfDice; i++) {
+            this.diceList.push(new dice(this.diceShapeNumber));
         }
-        return diceListInThisRow;
-    };
-    this.getDiceInColumn = function(columnNumber) {
-        var i, diceListInThisColumn = [], D00Multiplier = 1;
-        if (this === diceList.D00) { D00Multiplier = 2; }
-        for (i = 1; i < this.createdDice * D00Multiplier + 1; i += 1) {
-        if (this[i].column === columnNumber) {
-            diceListInThisColumn.push(this[i]);
-        }
-        }
-        return diceListInThisColumn;
-    };
+    }
+    
+}
+function dice(diceShapeNumber) {
+    this.diceShapeNumber = diceShapeNumber;
+    this.value = "";
+    this.diceSprite = new imageSprite(
+        lowerDimension * spriteScale, lowerDimension * spriteScale,
+        "dice.png", 0, 0, 0
+    );
 }
 
 function randomInteger(min, max) {;

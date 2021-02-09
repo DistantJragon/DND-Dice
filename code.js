@@ -2,13 +2,13 @@ var drawPriorityList = [];
 var imageList = {};
 var shapeList = {};
 var textList = {};
-var diceList = [];
+var diceGroupList = [];
 var hudList = [];
 var typeOfDiceSlotsList = [];
 var numberOfDiceSlotsList = [];
-var maxNumberOfDiceRows;
-var maxNumberOfDiceColumns;
-var maxNumberOfDice;
+var maxNumberOfDiceRowsPerPage;
+var maxNumberOfDiceColumnsPerPage;
+var maxNumberOfDicePerPage;
 var gameLoopHasStarted = false;
 
 var tempCanvas = document.getElementById("theCanvas");
@@ -48,10 +48,10 @@ var gameArea = {
         }
         if (gameLoopHasStarted) {
             var spaceAvailiableInWidth = this.canvas.width - (2 * imageList.optionsButton.x) - imageList.optionsButton.width - shapeList.numberOfDiceSliderEnd.width;
-            maxNumberOfDiceColumns = Math.floor(spaceAvailiableInWidth / this.lowerDimension() / this.spriteScale);
+            maxNumberOfDiceColumnsPerPage = Math.floor(spaceAvailiableInWidth / this.lowerDimension() / this.spriteScale);
             var spaceAvailiableInHeight = this.canvas.height - shapeList.typeOfDiceSliderEnd.height - imageList.optionsButton.x
-            maxNumberOfDiceRows = Math.floor(spaceAvailiableInHeight / this.lowerDimension() / this.spriteScale);
-            maxNumberOfDice = maxNumberOfDiceColumns * maxNumberOfDiceRows;
+            maxNumberOfDiceRowsPerPage = Math.floor(spaceAvailiableInHeight / this.lowerDimension() / this.spriteScale);
+            maxNumberOfDice = maxNumberOfDiceColumnsPerPage * maxNumberOfDiceRowsPerPage;
         }
     },
     setFullscreen: function() {
@@ -181,34 +181,50 @@ function textSprite(fontSize, font, textAllignment, color, x, y, drawPriority) {
     }
 }
 
-function diceType(numberOfSides, pageNumber, numberOfDiceInAGroup, diceShapeNumber) {
+function diceType(numberOfSides, pageNumber, numberOfDiceInGroup, diceShapeNumber) {
     this.numberOfDice = 1;
+    this.numberOfGroups = 1;
     this.pageNumber = pageNumber;
+    this.numberOfDiceInGroup = numberOfDiceInGroup;
     this.numberOfRows = 1;
-    this.numberOfColumns = numberOfDiceInAGroup;
-    this.numberOfDiceInAGroup = numberOfDiceInAGroup;
+    this.numberOfColumns = 1;
+    this.numberOfRowsPerGroup = convertDiceToRows(this.numberOfDiceInGroup);
+    this.numberOfColumnsPerGroup = convertDiceToColumns(this.numberOfDiceInGroup);
+    this.maxNumberOfDiceRows = Math.floor(maxNumberOfDiceRowsPerPage / this.numberOfRowsPerGroup);
+    this.maxNumberOfDiceColumns = Math.floor(maxNumberOfDiceColumnsPerPage / this.numberOfColumnsPerGroup);
+    this.maxNumberOfGroups = this.maxNumberOfDiceRows * this.maxNumberOfDiceColumns;
+    this.createdDiceGroups = 0;
     this.createdDice = 0;
     this.tempRow = 1;
     this.tempColumn = 1;
     this.numberOfSides = numberOfSides;
-    this.diceList = [];
+    this.diceGroupList = [];
     this.diceShapeNumber = diceShapeNumber;
-    this.diceInRow = [];
-    this.diceinColumn = [];
-    this.createDice() = function() {
-        for (i = this.createdDice; i < maxNumberOfDice; i++) {
-            this.diceList.push(new dice(this.diceShapeNumber));
+    this.createDiceGroups = function() {
+        for (i = this.createdDiceGroups; i < this.maxNumberOfGroups + 1; i++) {
+            this.diceGroupList.push(new diceGroup(this.numberOfSides, this.diceShapeNumber));
+            this.createdDiceGroups += 1;
+            for (i = 0; i < this.numberOfDiceInGroup + 1; i++) {
+                this.diceGroupList[i].diceList.push[new dice(this.numberOfSides, this.diceShapeNumber)]
+            }
         }
+        this.createdDice = this.maxNumberOfDice;
     }
-    
 }
-function dice(diceShapeNumber) {
+function diceGroup(numberOfSides, diceShapeNumber) {
+    this.numberOfSides = numberOfSides;
     this.diceShapeNumber = diceShapeNumber;
-    this.value = "";
-    this.diceSprite = new imageSprite(
-        lowerDimension * spriteScale, lowerDimension * spriteScale,
-        "dice.png", 0, 0, 0
-    );
+    this.diceList = [];
+}
+
+function dice(numberOfSides, diceShapeNumber) {
+    this.value = -1
+    this.diceSprite = {
+        shape: new imageSprite(
+            gameArea.lowerDimension * spriteScale, gameArea.lowerDimension * spriteScale,
+            "dice.png", 0, 0, 0
+        )
+    }
 }
 
 function randomInteger(min, max) {;
@@ -324,10 +340,10 @@ function createHudSprites() {
     );
     sB = shapeList.numberOfDiceSliderBar;
     gameArea.resizeCanvas();
-    for (i = 0; i < maxNumberOfDice; i++) {
+    for (i = 0; i < maxNumberOfDicePerPage; i++) {
         numberOfDiceSlotsList[i] = new shapeSprite(
             "circle", "#8B8B8B", "0px", "#00000000", hudWidth / 6, hudWidth / 6,
-            sB.x + hudWidth / 2, sB.y + i * sB.height / (maxNumberOfDice - 1), 2
+            sB.x + hudWidth / 2, sB.y + i * sB.height / (maxNumberOfDicePerPage - 1), 2
         );
         numberOfDiceSlotsList[i].moveCenterToSides(-1, -1)
     }
@@ -348,5 +364,15 @@ function gameLoop() {
     controlHUD();
     gameArea.updateSprites();
     resetHud();
+}
+function nearestSquareNumber(number) {
+    var nearestRoot = Math.ceil(Math.sqrt(number));
+    return nearestRoot * nearestRoot;
+}
+function convertDiceToColumns(number) {
+    return Math.floor(Math.sqrt(number - 1) + 1)
+}
+function convertDiceToRows(number) {
+    return Math.floor(Math.sqrt(number - 0.75) + 0.5)
 }
 startGameLoop();

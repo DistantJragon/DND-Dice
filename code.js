@@ -15,8 +15,8 @@ var tempCanvas = document.getElementById("theCanvas");
 var gameArea = {
     canvas: tempCanvas,
     ctx: tempCanvas.getContext("2d"),
-    spriteScale: 0.1,
-    canvasSizeChanged: false,
+    spriteScale: 1,
+    hudscale: 1,
     lowerDimension: function() {
         if (this.canvas.height < this.canvas.width) {
             return this.canvas.height;
@@ -31,27 +31,27 @@ var gameArea = {
         for (list of drawPriorityList) {
             if (list) {
                 for (sprite of list) {
-                    sprite.update();
+                    sprite.draw();
                 }
             }
         }
     },
-    resizeCanvas: function() {
-        this.canvasSizeChanged = false;
+    checkWindowSize: function() {
+        var canvasSizeChanged = false;
         if (this.canvas.width != window.innerWidth) {
             this.canvas.width  = window.innerWidth;
-            this.canvasSizeChanged = true;
+            canvasSizeChanged = true;
         }
         if (this.canvas.height != window.innerHeight) {
             this.canvas.height  = window.innerHeight;
-            this.canvasSizeChanged = true;
+            canvasSizeChanged = true;
         }
-        if (gameLoopHasStarted) {
-            var spaceAvailiableInWidth = this.canvas.width - (2 * imageList.optionsButton.x) - imageList.optionsButton.width - shapeList.numberOfDiceSliderEnd.width;
-            maxNumberOfDiceColumnsPerPage = Math.floor(spaceAvailiableInWidth / this.lowerDimension() / this.spriteScale);
-            var spaceAvailiableInHeight = this.canvas.height - shapeList.typeOfDiceSliderEnd.height - imageList.optionsButton.x
-            maxNumberOfDiceRowsPerPage = Math.floor(spaceAvailiableInHeight / this.lowerDimension() / this.spriteScale);
-            maxNumberOfDice = maxNumberOfDiceColumnsPerPage * maxNumberOfDiceRowsPerPage;
+
+        if (canvasSizeChanged) {
+            resetHud()
+            return true
+        } else {
+            return false
         }
     },
     setFullscreen: function() {
@@ -62,12 +62,15 @@ var gameArea = {
         }
     }
 };
-gameArea.resizeCanvas();
 
 var camera = {x: 0, y: 0};
 var gradient;
 
-function imageSprite(width, height, source, x, y, drawPriority) {
+function imageSprite(source,
+    drawPriority = 0,
+    width = 100, height = 100,
+    x = 100, y = 100
+) {
     this.image = new Image();
     this.image.src = "./media/" + source;
     this.width = width;
@@ -85,7 +88,7 @@ function imageSprite(width, height, source, x, y, drawPriority) {
     drawPriorityList[drawPriority].push(this);
     if (drawPriority > 0) {this.hud = true; hudList.push(this);
     } else {this.hud = false;}
-    this.update = function() {
+    this.draw = function() {
         var ctx = gameArea.ctx;
         this.movement();
         ctx.drawImage(
@@ -107,7 +110,12 @@ function imageSprite(width, height, source, x, y, drawPriority) {
     }
 }
 
-function shapeSprite(shape, fillStyle, stokeWidth, strokeStyle, width, height, x, y, drawPriority) {
+function shapeSprite(shape = "circle", 
+    drawPriority = 0,
+    width = 100, height = 100, 
+    x = 100, y = 100,
+    fillStyle = "#000000", stokeWidth = 10, strokeStyle = "#000000"
+) {
     this.width = width;
     this.height = height;
     if (shape == "circle") {this.radius = this.width / 2;}
@@ -127,12 +135,12 @@ function shapeSprite(shape, fillStyle, stokeWidth, strokeStyle, width, height, x
     if (drawPriority > 0) {this.hud = true;
     } else {this.hud = false;}
     if (this.hud) {hudList.push(this)}
-    this.update = function() {
+    this.draw = function() {
         var ctx = gameArea.ctx;
         this.movement();
         ctx.beginPath();
         if (this.shape == "rectangle") {ctx.rect(this.x - camera.x, this.y - camera.y, this.width, this.height);}
-        else if (this.shape == "circle") {ctx.arc(this.x + this.radius, this.y + this.radius, this.radius, 0, 2 * Math.PI);}
+        else if (this.shape == "circle") {ctx.arc(this.x + this.radius - camera.x, this.y + this.radius + camera.y, this.radius, 0, 2 * Math.PI);}
         ctx.fillStyle = this.fillStyle;
         ctx.fill();
         ctx.lineWidth = this.stokeWidth;
@@ -145,12 +153,22 @@ function shapeSprite(shape, fillStyle, stokeWidth, strokeStyle, width, height, x
         this.y += this.velocity * Math.sin(this.direction);
     },
     this.moveCenterToSides = function(moveX, moveY) {
-        this.x = this.x + ((this.width / 2) * moveX)
-        this.y = this.y + ((this.height / 2) * moveY)
+        if (this.shape == "rectagle") {
+            this.x = this.x + ((this.width / 2) * moveX)
+            this.y = this.y + ((this.height / 2) * moveY)
+        } else if (this.shape == "circle") {
+            this.x = this.x + ((this.radius) * moveX)
+            this.y = this.y + ((this.radius) * moveY)
+        }
     }
 }
 
-function textSprite(fontSize, font, textAllignment, color, x, y, drawPriority) {
+function textSprite(text,
+    drawPriority = 0,
+    x = 100, y = 100,
+    fontSize, color, font, textAllignment
+) {
+    this.text = text
     this.fontSize = fontSize;
     this.font = font;
     this.textAllignment = textAllignment;
@@ -166,7 +184,7 @@ function textSprite(fontSize, font, textAllignment, color, x, y, drawPriority) {
     drawPriorityList[drawPriority].push(this)
     if (drawPriority > 0) {this.hud = true; hudList.push(this);
     } else {this.hud = false;}
-    this.update = function() {
+    this.draw = function() {
         var ctx = myGameArea.context;
         this.movement();
         ctx.font = this.fontSize + " " + this.font;
@@ -266,84 +284,173 @@ function controlHUD() {
     if (tDSI.imageTrimStartX > 5760) {
         tDSI.imageTrimStartX = 0;
     }
-    for (hudElement of hudList) {
-        hudElement.x += camera.x;
-        hudElement.y += camera.y;
-    }
 }
 function resetHud() {
-    for (hudElement of hudList) {
-        hudElement.x -= camera.x;
-        hudElement.y -= camera.y;
+    var hudscale = gameArea.hudscale;
+    var lowerDimension = gameArea.lowerDimension();
+    var lD = lowerDimension;
+    var settingsWidth = lD * hudscale * 0.1;
+    var sliderWidth = settingsWidth * 0.55;
+    var padding = lD * 0.01;
+    imageList.optionsButton.width = settingsWidth;
+    imageList.optionsButton.height = settingsWidth;    
+    imageList.optionsButton.x = padding;
+    imageList.optionsButton.y = padding;
+    imageList.typeOfDiceSliderIcon.width = sliderWidth;
+    imageList.typeOfDiceSliderIcon.height = sliderWidth;
+    imageList.typeOfDiceSliderIcon.x = padding;
+    imageList.typeOfDiceSliderIcon.y = gameArea.canvas.height - sliderWidth - padding;
+    imageList.numberOfDiceSliderIcon.width = sliderWidth;
+    imageList.numberOfDiceSliderIcon.height = sliderWidth;
+    imageList.numberOfDiceSliderIcon.x = gameArea.canvas.width - sliderWidth - padding;
+    imageList.numberOfDiceSliderIcon.y = gameArea.canvas.height - sliderWidth - padding;
+    var tDSI = imageList.typeOfDiceSliderIcon;
+    var nDSI = imageList.numberOfDiceSliderIcon;
+    shapeList.typeOfDiceSliderStart.radius = sliderWidth * 0.5;
+    shapeList.typeOfDiceSliderStart.x = sliderWidth + padding * 2;
+    shapeList.typeOfDiceSliderStart.y = tDSI.y;
+    shapeList.typeOfDiceSliderEnd.radius = sliderWidth * 0.5;
+    shapeList.typeOfDiceSliderEnd.x = nDSI.x - sliderWidth - padding;
+    shapeList.typeOfDiceSliderEnd.y = nDSI.y;
+    var sS = shapeList.typeOfDiceSliderStart;
+    var sE = shapeList.typeOfDiceSliderEnd;
+    shapeList.typeOfDiceSliderBar.width = sE.x - sS.x;
+    shapeList.typeOfDiceSliderBar.height = sliderWidth;
+    shapeList.typeOfDiceSliderBar.x = sS.x + sliderWidth * 0.5;
+    shapeList.typeOfDiceSliderBar.y = tDSI.y;
+    var sB = shapeList.typeOfDiceSliderBar;
+    for (i = 0; i < 7; i++) {
+        typeOfDiceSlotsList[i].radius = sliderWidth * 0.125;
+        typeOfDiceSlotsList[i].x = sB.x + i * sB.width / 6;
+        typeOfDiceSlotsList[i].y = sB.y + sliderWidth * 0.5;
+        typeOfDiceSlotsList[i].moveCenterToSides(-1, -1);
+    }
+    shapeList.numberOfDiceSliderStart.radius = sliderWidth * 0.5;
+    shapeList.numberOfDiceSliderStart.x = imageList.numberOfDiceSliderIcon.x;
+    shapeList.numberOfDiceSliderStart.y = nDSI.y - sliderWidth - padding;
+    shapeList.numberOfDiceSliderEnd.radius = sliderWidth * 0.5;
+    shapeList.numberOfDiceSliderEnd.x = nDSI.x;
+    shapeList.numberOfDiceSliderEnd.y = padding;
+    sS = shapeList.numberOfDiceSliderStart;
+    sE = shapeList.numberOfDiceSliderEnd;
+    shapeList.numberOfDiceSliderBar.width = sliderWidth;
+    shapeList.numberOfDiceSliderBar.height = sE.y - sS.y;
+    shapeList.numberOfDiceSliderBar.x = nDSI.x;
+    shapeList.numberOfDiceSliderBar.y= sS.y + sliderWidth * 0.5;
+    sB = shapeList.numberOfDiceSliderBar;
+    gameArea.checkMaxNumberOfDice();
+    for (i = 0; i < maxNumberOfDicePerPage; i++) {
+        if (numberOfDiceSlotsList[i]) {
+            numberOfDiceSlotsList[i].radius = sliderWidth * 0.125;
+            numberOfDiceSlotsList[i].x = sB.x + sliderWidth * 0.5;
+            numberOfDiceSlotsList[i].y = sB.y + i * sB.height / (maxNumberOfDicePerPage - 1);
+        } else {
+            numberOfDiceSlotsList[i] = new shapeSprite(
+                "circle", 2,
+                sliderWidth / 4, sliderWidth / 4,
+                sB.x + sliderWidth * 0.5, sB.y + i * sB.height / (maxNumberOfDicePerPage - 1),
+                "#8B8B8B", "0px", "#00000000"
+            );
+        }
+        numberOfDiceSlotsList[i].moveCenterToSides(-1, -1)
+    }
+    while (i < numberOfDiceSlotsList.length) {
+        numberOfDiceSlotsList[i].y = -1000;
+        i++;
     }
 }
 
 function createHudSprites() {
     var spriteScale = gameArea.spriteScale;
     var lowerDimension = gameArea.lowerDimension();
+    var lD = lowerDimension;
+    var settingsWidth = lD * spriteScale * 0.1;
+    var sliderWidth = settingsWidth * 0.55;
+    var padding = lD * 0.01
     imageList.optionsButton = new imageSprite(
-        lowerDimension * spriteScale, lowerDimension * spriteScale,
-        "options.png", lowerDimension * 0.01, lowerDimension * 0.01, 1
+        "options.png", 1,
+        settingsWidth, settingsWidth,
+        padding, padding
     );
-    var hudWidth = lowerDimension * spriteScale * 0.55;
-    imageList.typeOfDiceSliderIcon = new imageSprite(
-        hudWidth, hudWidth, 
-        "dice.png", 
-        lowerDimension * 0.01, 
-        lowerDimension * -0.01 + gameArea.canvas.height - hudWidth, 1
+    imageList.typeOfDiceSliderIcon = new imageSprite( 
+        "dice.png", 1,
+        sliderWidth, sliderWidth,
+        padding, gameArea.canvas.height - sliderWidth - padding
     );
     imageList.typeOfDiceSliderIcon.timer = 0;
-    imageList.numberOfDiceSliderIcon = new imageSprite(
-        hudWidth, hudWidth,
-        "poundSign.png",
-        lowerDimension * -0.01 + gameArea.canvas.width - hudWidth,
-        lowerDimension * -0.01 + gameArea.canvas.height - hudWidth, 1
+    imageList.numberOfDiceSliderIcon = new imageSprite(   
+        "poundSign.png", 1,
+        sliderWidth, sliderWidth,
+        gameArea.canvas.width - sliderWidth - padding,
+        gameArea.canvas.height - sliderWidth - padding
     );
     var tDSI = imageList.typeOfDiceSliderIcon;
     var nDSI = imageList.numberOfDiceSliderIcon;
     shapeList.typeOfDiceSliderStart = new shapeSprite(
-        "circle", "#BFBFBF", "0px", "#00000000", hudWidth, hudWidth,
-        tDSI.x + hudWidth + 10, tDSI.y, 1
+        "circle", 1, 
+        sliderWidth, sliderWidth, 
+        tDSI.x + sliderWidth + padding, tDSI.y,
+        "#BFBFBF", "0px", "#00000000"
     );
-    shapeList.typeOfDiceSliderEnd = new shapeSprite(
-        "circle", "#BFBFBF", "0px", "#00000000", hudWidth, hudWidth,
-        nDSI.x - hudWidth - 10, nDSI.y, 1
+    shapeList.typeOfDiceSliderEnd = new shapeSprite(  
+        "circle", 1, 
+        sliderWidth, sliderWidth, 
+        nDSI.x - sliderWidth - padding, nDSI.y,
+        "#BFBFBF", "0px", "#00000000"
     );
     var sS = shapeList.typeOfDiceSliderStart;
     var sE = shapeList.typeOfDiceSliderEnd;
     shapeList.typeOfDiceSliderBar = new shapeSprite(
-        "rectangle", "#BFBFBF", "0px", "#00000000", sE.x - sS.x, hudWidth,
-        sS.x + hudWidth / 2, sS.y, 1
+        "rectangle", 1,
+        sE.x - sS.x, sliderWidth,
+        sS.x + sliderWidth * 0.5, sS.y,
+        "#BFBFBF", "0px", "#00000000",
     );
     var sB = shapeList.typeOfDiceSliderBar;
     for (i = 0; i < 7; i++) {
         typeOfDiceSlotsList[i] = new shapeSprite(
-            "circle", "#8B8B8B", "0px", "#00000000", hudWidth / 6, hudWidth / 6,
-            sB.x + i * sB.width / 6, sB.y + hudWidth / 2, 2
+            "circle", 2,
+            sliderWidth / 4, sliderWidth / 4,
+            sB.x + i * sB.width / 6, sB.y + sliderWidth / 2,
+            "#8B8B8B", "0px", "#00000000"
         );
         typeOfDiceSlotsList[i].moveCenterToSides(0, -1)
     }
-
     shapeList.numberOfDiceSliderStart = new shapeSprite(
-        "circle", "#BFBFBF", "0px", "#00000000", hudWidth, hudWidth,
-        nDSI.x, nDSI.y - hudWidth - 10, 1
+        "circle", 1,
+        sliderWidth, sliderWidth,
+        nDSI.x, nDSI.y - sliderWidth - padding,
+        "#BFBFBF", "0px", "#00000000"
     );
     shapeList.numberOfDiceSliderEnd = new shapeSprite(
-        "circle", "#BFBFBF", "0px", "#00000000", hudWidth, hudWidth,
-        nDSI.x, lowerDimension * 0.01, 1
+        "circle", 1,
+        sliderWidth, sliderWidth,
+        nDSI.x, padding,
+        "#BFBFBF", "0px", "#00000000"
     );
     sS = shapeList.numberOfDiceSliderStart;
     sE = shapeList.numberOfDiceSliderEnd;
     shapeList.numberOfDiceSliderBar = new shapeSprite(
-        "rectangle", "#BFBFBF", "0px", "#00000000", hudWidth, sE.y - sS.y,
-        sS.x, sS.y + hudWidth / 2, 1
+        "rectangle", 1,
+        sliderWidth, sE.y - sS.y,
+        sS.x, sS.y + sliderWidth / 2,
+        "#BFBFBF", "0px", "#00000000"
     );
     sB = shapeList.numberOfDiceSliderBar;
-    gameArea.resizeCanvas();
+    gameArea.checkMaxNumberOfDice = function() {
+        var spaceAvailiableInWidth = gameArea.canvas.width - (2 * padding) - settingsWidth - sliderWidth;
+        maxNumberOfDiceColumnsPerPage = Math.floor(spaceAvailiableInWidth / lD / gameArea.spriteScale * 10);
+        var spaceAvailiableInHeight = gameArea.canvas.height - sliderWidth - imageList.optionsButton.x
+        maxNumberOfDiceRowsPerPage = Math.floor(spaceAvailiableInHeight / lD / gameArea.spriteScale * 10);
+        maxNumberOfDicePerPage = maxNumberOfDiceColumnsPerPage * maxNumberOfDiceRowsPerPage;
+    }
+    gameArea.checkMaxNumberOfDice();
     for (i = 0; i < maxNumberOfDicePerPage; i++) {
         numberOfDiceSlotsList[i] = new shapeSprite(
-            "circle", "#8B8B8B", "0px", "#00000000", hudWidth / 6, hudWidth / 6,
-            sB.x + hudWidth / 2, sB.y + i * sB.height / (maxNumberOfDicePerPage - 1), 2
+            "circle", 2,
+            sliderWidth / 4, sliderWidth / 4,
+            sB.x + sliderWidth / 2, sB.y + i * sB.height / (maxNumberOfDicePerPage - 1),
+            "#8B8B8B", "0px", "#00000000"
         );
         numberOfDiceSlotsList[i].moveCenterToSides(-1, -1)
     }
@@ -358,12 +465,11 @@ function startGameLoop() {
     }
 }
 function gameLoop() {
-    gameArea.resizeCanvas();
+    gameArea.checkWindowSize();
     // move camera
     gameArea.clear();
     controlHUD();
     gameArea.updateSprites();
-    resetHud();
 }
 function nearestSquareNumber(number) {
     var nearestRoot = Math.ceil(Math.sqrt(number));

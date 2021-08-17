@@ -16,7 +16,7 @@ var gameArea = {
     canvas: tempCanvas,
     ctx: tempCanvas.getContext("2d"),
     spriteScale: 1,
-    hudscale: 1,
+    hudScale: 1,
     lowerDimension: function() {
         if (this.canvas.height < this.canvas.width) {
             return this.canvas.height;
@@ -97,7 +97,7 @@ function imageSprite(source,
             this.image, 
             this.imageTrimStartX, this.imageTrimStartY, 
             this.imageTrimLengthX, this.imageTrimLengthY,
-            this.x - camera.x, this.y - camera.y,
+            this.x - (camera.x * this.hud), this.y - (camera.y * this.hud),
             this.width, this.height
         );
         ctx.globalAlpha = 1;
@@ -142,8 +142,8 @@ function shapeSprite(shape = "circle",
         var ctx = gameArea.ctx;
         this.movement();
         ctx.beginPath();
-        if (this.shape == "rectangle") {ctx.rect(this.x - camera.x, this.y - camera.y, this.width, this.height);}
-        else if (this.shape == "circle") {ctx.arc(this.x + this.radius - camera.x, this.y + this.radius + camera.y, this.radius, 0, 2 * Math.PI);}
+        if (this.shape == "rectangle") {ctx.rect(this.x - (camera.x * this.hud), this.y - (camera.y * this.hud), this.width, this.height);}
+        else if (this.shape == "circle") {ctx.arc(this.x + this.radius - (camera.x * this.hud), this.y + this.radius + (camera.y * this.hud), this.radius, 0, 2 * Math.PI);}
         ctx.fillStyle = this.fillStyle;
         ctx.fill();
         ctx.lineWidth = this.stokeWidth;
@@ -277,9 +277,14 @@ function mousePressed(e) {
 
 function mouseIsOver(thing, mouseX, mouseY) {
     var thingXStart = thing.x;
-    var thingXEnd = thing.x + thing.width;
     var thingYStart = thing.y;
-    var thingYEnd = thing.y + thing.height;
+    if (thing.radius) {
+        var thingXEnd = thing.x + thing.radius;
+        var thingYEnd = thing.y + thing.radius;
+    } else {
+        var thingXEnd = thing.x + thing.width;
+        var thingYEnd = thing.y + thing.height;
+    }
     return  (
         mouseX >= thingXStart && 
         mouseX <= thingXEnd && 
@@ -302,10 +307,10 @@ function controlHUD() {
     }
 }
 function resetHud() {
-    var hudscale = gameArea.hudscale;
+    var hudScale = gameArea.hudScale;
     var lowerDimension = gameArea.lowerDimension();
     var lD = lowerDimension;
-    var settingsWidth = lD * hudscale * 0.1;
+    var settingsWidth = lD * hudScale * 0.1;
     var sliderWidth = settingsWidth * 0.55;
     var padding = lD * 0.01;
     imageList.optionsButton.width = settingsWidth;
@@ -378,12 +383,12 @@ function resetHud() {
 }
 
 function createHudSprites() {
-    var spriteScale = gameArea.spriteScale;
+    var hudScale = gameArea.hudScale;
     var lowerDimension = gameArea.lowerDimension();
     var lD = lowerDimension;
-    var settingsWidth = lD * spriteScale * 0.1;
+    var settingsWidth = lD * hudScale * 0.1;
     var sliderWidth = settingsWidth * 0.55;
-    var padding = lD * 0.01
+    var padding = lD * 0.01;
     imageList.optionsButton = new imageSprite(
         "options.png", 1,
         settingsWidth, settingsWidth,
@@ -455,6 +460,12 @@ function createHudSprites() {
     );
     sB = shapeList.numberOfDiceSliderBar;
     gameArea.checkMaxNumberOfDice = function() {
+        var hudScale = gameArea.hudScale;
+        var lowerDimension = gameArea.lowerDimension();
+        var lD = lowerDimension;
+        var settingsWidth = lD * hudScale * 0.1;
+        var sliderWidth = settingsWidth * 0.55;
+        var padding = lD * 0.01;
         var spaceAvailiableInWidth = gameArea.canvas.width - (2 * padding) - settingsWidth - sliderWidth;
         maxNumberOfDiceColumnsPerPage = Math.floor(spaceAvailiableInWidth / lD / gameArea.spriteScale * 10);
         var spaceAvailiableInHeight = gameArea.canvas.height - sliderWidth - imageList.optionsButton.x

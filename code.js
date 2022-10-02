@@ -16,11 +16,9 @@ var camera = {x: 0, y: 0,
               rightTimer: 0, leftTimer: 0};
 var diceWidth = 250;
 function randomNumber(min, max) {
-  "use strict";
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 function Component(width, height, color, x, y, type) {
-  "use strict";
   this.type = type;
   if (type === "image") {
     this.image = new Image();
@@ -70,7 +68,6 @@ function Component(width, height, color, x, y, type) {
   };
 }
 function DiceType(pageNumber) {
-  "use strict";
   this.numberOfDice = 1;
   this.pageNumber = pageNumber;
   this.maxRows = Math.floor((canvasHeight - 200) / diceWidth);
@@ -399,7 +396,6 @@ function DiceType(pageNumber) {
   };
 }
 function Sound(src) {
-  "use strict";
   this.sound = document.createElement("audio");
   this.sound.src = "./media/" + src;
   this.sound.setAttribute("preload", "auto");
@@ -434,7 +430,6 @@ var numberSlider = {
 var muter, accelerometerToggler;
 
 function sliderXPositions() {
-  "use strict";
   diceSlider.icon.x = 25 + diceSlider.icon.width / 2 + camera.x - canvasWidth / 2;
   numberSlider.icon.x = -25 - diceSlider.icon.width / 2 + camera.x + canvasWidth / 2;
   
@@ -451,7 +446,6 @@ function sliderXPositions() {
   numberSlider.fill.width = numberSlider.end.x + numberSlider.end.width / 2 - numberSlider.fill.x;
 }
 function sliderYPositions() {
-  "use strict";
   diceSlider.icon.y = canvasHeight - 25 - diceSlider.icon.height / 2;
   diceSlider.icon.y = canvasHeight - 25 - diceSlider.icon.height / 2;
   numberSlider.icon.y = canvasHeight - 25 - numberSlider.icon.height / 2;
@@ -470,7 +464,6 @@ function sliderYPositions() {
 }
 
 function allSprites() {
-  "use strict";
   var i, distanceBetweenDiceBarSlots, distanceBetweenNumberBarSlots;
   diceList.D4 = new DiceType(0);
   diceList.D6 = new DiceType(1);
@@ -544,7 +537,6 @@ var D20Text2;
 var TotalText;
 
 function createText() {
-  "use strict";
   D4Text1 = new Component("30px", "Consolas", "black", canvasWidth * 0.5 - 15, 30, "text");
   D4Text2 = new Component("30px", "Consolas", "black", canvasWidth * 7.5 - 15, 30, "text");
   D6Text1 = new Component("30px", "Consolas", "black", canvasWidth * 1.5 - 15, 30, "text");
@@ -588,12 +580,10 @@ var cursor = {
   velocityX: 0, velocityY: 0,
   pressed: false, isPressed: false, released: false,
   set: function () {
-    "use strict";
     cursor.velocityX = cursor.x - cursor.previousX;
     cursor.velocityY = cursor.y - cursor.previousY;
   },
   reset: function () {
-    "use strict";
     cursor.pressed = false;
     cursor.released = false;
     cursor.previousX = cursor.x;
@@ -606,13 +596,11 @@ var accelerometer = {
   velocityX: 0, velocityY: 0, velocityZ: 0,
   enabled: false,
   set: function () {
-    "use strict";
     accelerometer.velocityX = accelerometer.x - accelerometer.previousX;
     accelerometer.velocityY = accelerometer.y - accelerometer.previousY;
     accelerometer.velocityZ = accelerometer.z - accelerometer.previousZ;
   },
   reset: function () {
-    "use strict";
     accelerometer.previousX = accelerometer.x;
     accelerometer.previousY = accelerometer.y;
     accelerometer.previousZ = accelerometer.z;
@@ -625,7 +613,6 @@ var errorSound;
 var rollSound;
 
 function getDiceGroupAtCurrentPage() {
-  "use strict";
   var dice;
   for (dice in diceList) {
     if (diceList.hasOwnProperty(dice)) {
@@ -636,7 +623,7 @@ function getDiceGroupAtCurrentPage() {
   }
 }
 function mouseIsOver(sprite) {
-  "use strict";
+  "use ";
   if ((camera.mouseX >= sprite.x - sprite.width / 2 &&
       camera.mouseY >= sprite.y - sprite.height / 2 &&
       camera.mouseX <= sprite.x + sprite.width / 2 &&
@@ -652,7 +639,6 @@ function mouseIsOver(sprite) {
   }
 }
 function mousePressOver(sprite) {
-  "use strict";
   if (mouseIsOver(sprite) && cursor.isPressed) {
     return true;
   } else {
@@ -660,7 +646,6 @@ function mousePressOver(sprite) {
   }
 }
 function goRight() {
-  "use strict";
   controlRightToggle = true;
   camera.rightToggle = true;
   swipeCheck = 0;
@@ -669,7 +654,6 @@ function goRight() {
   }
 }
 function goLeft() {
-  "use strict";
   controlLeftToggle = true;
   camera.leftToggle = true;
   swipeCheck = 0;
@@ -678,7 +662,6 @@ function goLeft() {
   }
 }
 function numUp() {
-  "use strict";
   if (getDiceGroupAtCurrentPage() !== undefined) {
     if (getDiceGroupAtCurrentPage().numberOfDice < getDiceGroupAtCurrentPage().maxDice) {
       getDiceGroupAtCurrentPage().numberOfDice += 1;
@@ -690,7 +673,6 @@ function numUp() {
   swipeCheck = 0;
 }
 function numDown() {
-  "use strict";
   if (getDiceGroupAtCurrentPage() !== undefined) {
     if (getDiceGroupAtCurrentPage().numberOfDice > 1) {
       getDiceGroupAtCurrentPage().numberOfDice -= 1;
@@ -702,7 +684,6 @@ function numDown() {
   swipeCheck = 0;
 }
 function control() {
-  "use strict";
   if (keysPressed[39] === 1) {
     goRight();
   } // Press Right
@@ -767,7 +748,6 @@ function control() {
   }
 }
 function checkToRollDice() {
-  "use strict";
   var dice;
   for (dice in diceList) {
     if (diceList.hasOwnProperty(dice)) {
@@ -778,7 +758,6 @@ function checkToRollDice() {
   }
 }
 function timers() {
-  "use strict";
   var dice;
   if (controlRightToggle) { // For pressing right
     controlRightTimer += 1;
@@ -830,7 +809,6 @@ function timers() {
   diceIconTimer += 1; // For Dice Bar Icon
 }
 function options() {
-  "use strict";
   if (mouseIsOver(muter) && cursor.pressed) {
     muteToggle = muteToggle * -1;
   }
@@ -849,7 +827,6 @@ function options() {
   }
 }
 function sliders() {
-  "use strict";
   var distanceBetweenNumberBarSlots, distanceBetweenDiceBarSlots, i;
   sliderXPositions();
   distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
@@ -927,7 +904,6 @@ function sliders() {
   }
 }
 function spriteAnimation() {
-  "use strict";
   var i, dice;
   if (warpingD4 === false && diceList.D4.reachedDestination() === false) {
     diceList.D4.moveToIntendedPositions();
@@ -966,7 +942,6 @@ function spriteAnimation() {
   }
 }
 function cameraPos() {
-  "use strict";
   var distanceBetweenDiceBarSlots = diceSlider.fill.width / 6;
   if (camera.rightToggle) { // Move right
     camera.x = camera.x + canvasWidth / 20;
@@ -1000,7 +975,6 @@ function cameraPos() {
 }
 
 function canvasSize() {
-  "use strict";
   myGameArea.canvas.width = 10;
   myGameArea.canvas.height = 10;
   myGameArea.canvas.width = window.innerWidth * window.devicePixelRatio - 5;
@@ -1009,7 +983,6 @@ function canvasSize() {
   canvasHeight = myGameArea.canvas.height;
 }
 function listenForControls() {
-  "use strict";
   myGameArea.canvas.addEventListener('mousemove', function () {
     cursor.x = (event.pageX - myGameArea.canvas.offsetLeft) * window.devicePixelRatio;
     cursor.y = (event.pageY - myGameArea.canvas.offsetTop) * window.devicePixelRatio;
@@ -1069,7 +1042,6 @@ function listenForControls() {
   }
 }
 function drawSprites() {
-  "use strict";
   var i, spriteType;
   for (spriteType in spriteList) {
     if (spriteList.hasOwnProperty(spriteType)) {
@@ -1081,7 +1053,6 @@ function drawSprites() {
   }
 }
 function updateText() {
-  "use strict";
   var i;
   if (getDiceGroupAtCurrentPage() !== undefined) {
     TotalText.text = "Total: " + (getDiceGroupAtCurrentPage().diceResultTotal);
@@ -1093,7 +1064,6 @@ function updateText() {
   }
 }
 function resetKeys() {
-  "use strict";
   var i;
   for (i = 0; i < keysPressed.length; i += 1) {
     if (keysPressed[i] === 1) {
@@ -1108,7 +1078,6 @@ function resetKeys() {
 }
 
 function updateGameArea() {
-  "use strict";
   myGameArea.clear();
   cursor.set();
   accelerometer.set();
@@ -1129,7 +1098,6 @@ function updateGameArea() {
 var myGameArea = {
   canvas : document.createElement("canvas"),
   start : function () {
-    "use strict";
     canvasSize();
     camera.x = canvasWidth / 2;
     camera.y = canvasHeight / 2;
@@ -1146,12 +1114,10 @@ var myGameArea = {
     listenForControls();
   },
   clear : function () {
-    "use strict";
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 };
 
 function startGame() {
-  "use strict";
   myGameArea.start();
 }
